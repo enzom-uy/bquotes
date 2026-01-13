@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
 import { Logger, LoggerErrorInterceptor } from 'nestjs-pino'
 import { ValidationPipe } from '@nestjs/common'
-import 'src/db/config'
+import 'src/db/db.module'
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, { bufferLogs: true })

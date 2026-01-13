@@ -14,7 +14,6 @@ export const users = pgTable(
     {
         id: uuid('id').defaultRandom().primaryKey().notNull(),
         name: text('name').notNull(),
-        nickname: varchar('nickname').notNull(),
         email: varchar('email').notNull().unique(),
         profile_picture_url: varchar('profile_picture_url'),
 
@@ -48,7 +47,7 @@ export const sessions = pgTable(
     {
         id: uuid('id').defaultRandom().primaryKey().notNull(),
         user_id: uuid('user_id').notNull(),
-        token: varchar('token').notNull().unique(),
+        token: text('token').notNull().unique(),
         expires_at: timestamp().notNull(),
         ip_address: varchar('ip_address').notNull(),
         user_agent: varchar('user_agent'),
