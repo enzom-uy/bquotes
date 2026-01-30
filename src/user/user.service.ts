@@ -5,12 +5,14 @@ import {
     Injectable,
     InternalServerErrorException,
     Logger,
+    NotFoundException,
 } from '@nestjs/common'
 import { eq } from 'drizzle-orm'
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import * as schema from '@/db/schema'
+import { CreateUserDto } from './dto/create-user.dto'
 
-export type User = any
+export type User = typeof schema.user.$inferSelect
 
 @Injectable()
 export class UserService {
@@ -23,11 +25,11 @@ export class UserService {
 
     async findByEmail(email: string) {
         try {
-            const [user] = await this.db
+            const [foundUser] = await this.db
                 .select()
-                .from(schema.users)
-                .where(eq(schema.users.email, email))
-            return user
+                .from(schema.user)
+                .where(eq(schema.user.email, email))
+            return foundUser
         } catch (error) {
             this.logger.error(
                 `Error finding user by email ${email}: ${error}`,
@@ -39,29 +41,60 @@ export class UserService {
         }
     }
 
-    async createUser(
-        user: typeof schema.users.$inferInsert,
-        tx?: NodePgDatabase<typeof schema>,
-    ) {
-        const db = tx || this.db
-        const userExists = await this.findByEmail(user.email)
-        if (userExists) {
-            throw new ConflictException('User already exists')
-        }
-        try {
-            const createdUser = await db
-                .insert(schema.users)
-                .values(user)
-                .returning()
+    async createUser(dto: CreateUserDto) {
+        return await this.db.transaction(async (tx) => {
+            const userExists = await this.findByEmail(dto.email)
+            if (userExists) {
+                throw new ConflictException('User already exists')
+            }
 
-            return createdUser[0]
+            const userData: typeof schema.user.$inferInsert = {
+                id: crypto.randomUUID(),
+                name: dto.name,
+                email: dto.email,
+                emailVerified: false,
+                image: dto.image || null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            }
+
+            try {
+                const [createdUser] = await tx
+                    .insert(schema.user)
+                    .values(userData)
+                    .returning()
+
+                return createdUser
+            } catch (error) {
+                this.logger.error(
+                    `Error creating user ${dto.email}: ${error}`,
+                    error instanceof Error ? error.stack : undefined,
+                )
+                throw new InternalServerErrorException(
+                    'Could not create user. Please try again later.',
+                )
+            }
+        })
+    }
+
+    async findUserById(userId: string) {
+        try {
+            const [foundUser] = await this.db
+                .select()
+                .from(schema.user)
+                .where(eq(schema.user.id, userId))
+
+            if (!foundUser) {
+                throw new NotFoundException('User not found')
+            }
+            return foundUser
         } catch (error) {
             this.logger.error(
-                `Error creating user ${user.email}: ${error}`,
+                `Error finding user by id ${userId}: ${error}`,
                 error instanceof Error ? error.stack : undefined,
             )
             throw new InternalServerErrorException(
-                'Could not create user. Please try again later.',
+                'Could not find user. Please try again later.',
             )
         }
     }

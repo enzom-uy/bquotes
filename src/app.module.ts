@@ -3,9 +3,8 @@ import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { LoggerModule } from 'nestjs-pino'
 import { ConfigModule } from '@nestjs/config'
-import { AuthController } from './auth/auth.controller'
-import { AuthService } from './auth/auth.service'
-import { GoogleService } from './auth/google/google.service'
+import { UserModule } from './user/user.module'
+import { DbModule } from './db/db.module'
 
 @Module({
     imports: [
@@ -36,8 +35,11 @@ import { GoogleService } from './auth/google/google.service'
                 },
             },
         }),
+
+        UserModule,
+        DbModule,
     ],
-    controllers: [AppController, AuthController],
-    providers: [AppService, AuthService, GoogleService],
+    controllers: [AppController],
+    providers: [AppService],
 })
 export class AppModule {}
