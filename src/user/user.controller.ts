@@ -1,13 +1,35 @@
-import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common'
+import {
+    Body,
+    Controller,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Patch,
+    Param,
+} from '@nestjs/common'
 import { UserService } from './user.service'
+import { UpdateProfileDto } from './dto/update-profile.dto'
+
+// TODO: cloudinary image upload endpoint + service
 
 @Controller('user')
 export class UserController {
     constructor(private readonly userService: UserService) {}
 
-    @Get('me')
+    @Get(':email')
     @HttpCode(HttpStatus.OK)
-    async getCurrentUser() {
-        return { message: 'Auth moved to frontend' }
+    async getUser(@Param('email') email: string) {
+        const user = await this.userService.findByEmail(email)
+        return user
+    }
+
+    @Patch('profile')
+    @HttpCode(HttpStatus.CREATED)
+    async updateProfile(@Body() body: UpdateProfileDto) {
+        const updatedUser = await this.userService.updateProfile(body)
+        return {
+            message: 'Profile updated successfully',
+            user: updatedUser,
+        }
     }
 }

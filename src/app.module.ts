@@ -5,6 +5,8 @@ import { LoggerModule } from 'nestjs-pino'
 import { ConfigModule } from '@nestjs/config'
 import { UserModule } from './user/user.module'
 import { DbModule } from './db/db.module'
+import { QuoteModule } from './quote/quote.module';
+import { OpenlibraryModule } from './openlibrary/openlibrary.module';
 
 @Module({
     imports: [
@@ -38,6 +40,8 @@ import { DbModule } from './db/db.module'
 
         UserModule,
         DbModule,
+        QuoteModule,
+        OpenlibraryModule,
     ],
     controllers: [AppController],
     providers: [AppService],

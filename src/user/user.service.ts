@@ -1,6 +1,5 @@
 import { DATABASE_CONNECTION } from '@/db/db.module'
 import {
-    ConflictException,
     Inject,
     Injectable,
     InternalServerErrorException,
@@ -10,7 +9,7 @@ import {
 import { eq } from 'drizzle-orm'
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import * as schema from '@/db/schema'
-import { CreateUserDto } from './dto/create-user.dto'
+import { UpdateProfileDto } from './dto/update-profile.dto'
 
 export type User = typeof schema.user.$inferSelect
 
@@ -41,42 +40,6 @@ export class UserService {
         }
     }
 
-    async createUser(dto: CreateUserDto) {
-        return await this.db.transaction(async (tx) => {
-            const userExists = await this.findByEmail(dto.email)
-            if (userExists) {
-                throw new ConflictException('User already exists')
-            }
-
-            const userData: typeof schema.user.$inferInsert = {
-                id: crypto.randomUUID(),
-                name: dto.name,
-                email: dto.email,
-                emailVerified: false,
-                image: dto.image || null,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            }
-
-            try {
-                const [createdUser] = await tx
-                    .insert(schema.user)
-                    .values(userData)
-                    .returning()
-
-                return createdUser
-            } catch (error) {
-                this.logger.error(
-                    `Error creating user ${dto.email}: ${error}`,
-                    error instanceof Error ? error.stack : undefined,
-                )
-                throw new InternalServerErrorException(
-                    'Could not create user. Please try again later.',
-                )
-            }
-        })
-    }
-
     async findUserById(userId: string) {
         try {
             const [foundUser] = await this.db
@@ -95,6 +58,39 @@ export class UserService {
             )
             throw new InternalServerErrorException(
                 'Could not find user. Please try again later.',
+            )
+        }
+    }
+
+    async updateProfile(userData: UpdateProfileDto) {
+        try {
+            const user = await this.findByEmail(userData.email)
+
+            if (!user) {
+                throw new NotFoundException('User not found')
+            }
+
+            const [updatedUser] = await this.db
+                .update(schema.user)
+                .set({
+                    name: userData.name,
+                    image: userData.image || null,
+                    updatedAt: new Date(),
+                })
+                .where(eq(schema.user.email, userData.email))
+                .returning()
+
+            return updatedUser
+        } catch (error) {
+            if (error instanceof NotFoundException) {
+                throw error
+            }
+            this.logger.error(
+                `Error updating profile for ${userData.email}: ${error}`,
+                error instanceof Error ? error.stack : undefined,
+            )
+            throw new InternalServerErrorException(
+                'Could not update profile. Please try again later.',
             )
         }
     }
