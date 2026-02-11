@@ -1,4 +1,18 @@
-import { Controller } from '@nestjs/common'
+import { Body, Controller, Post, Res } from '@nestjs/common'
+import { Response } from 'express'
+import { QuoteService } from './quote.service'
+import { CreateQuoteDto } from './dto/create-quote.dto'
 
-@Controller('quote')
-export class QuoteController {}
+@Controller('api/quotes')
+export class QuoteController {
+    constructor(private readonly quoteService: QuoteService) {}
+
+    @Post()
+    async createQuote(
+        @Body() createQuoteDto: CreateQuoteDto,
+        @Res() res: Response,
+    ) {
+        const quote = await this.quoteService.createQuote(createQuoteDto)
+        return res.status(201).json(quote)
+    }
+}
