@@ -18,6 +18,7 @@ export interface OpenLibraryBook {
     covers: number[]
     subjects: string[]
     key: string
+    authors: Array<{ author: { key: string }; type: { key: string } }>
 }
 
 export type APIOpenLibraryBookResponse = OpenLibraryBook

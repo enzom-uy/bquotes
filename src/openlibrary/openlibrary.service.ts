@@ -91,6 +91,7 @@ export class OpenlibraryService {
                 covers: data.covers,
                 subjects: data.subjects,
                 key: data.key,
+                authors: data.authors,
             }
 
             return formattedResponse

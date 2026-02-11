@@ -1,4 +1,4 @@
-import { uuid } from 'drizzle-orm/pg-core'
+import { uuid, primaryKey } from 'drizzle-orm/pg-core'
 import {
     index,
     foreignKey,
@@ -63,27 +63,16 @@ export const verification = pgTable('verification', {
     updatedAt: timestamp('updatedAt'),
 })
 
-export const Books = pgTable(
-    'books',
-    {
-        id: uuid('id').defaultRandom().primaryKey().notNull(),
-        title: text('title').notNull(),
-        author_id: uuid('author_id').notNull(),
-        summary: text('summary'),
-        cover_url: text('cover_url'),
-        openlibrary_id: text('openlibrary_id').notNull().unique(),
+export const Books = pgTable('books', {
+    id: uuid('id').defaultRandom().primaryKey().notNull(),
+    title: text('title').notNull(),
+    summary: text('summary'),
+    cover_url: text('cover_url'),
+    openlibrary_id: text('openlibrary_id').notNull().unique(),
 
-        createdAt: timestamp('created_at').defaultNow().notNull(),
-        updatedAt: timestamp('updated_at'),
-    },
-    (table) => [
-        foreignKey({
-            columns: [table.author_id],
-            foreignColumns: [Authors.id],
-            name: 'authors_books_author_id_fk',
-        }).onDelete('cascade'),
-    ],
-)
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at'),
+})
 
 export const Authors = pgTable('authors', {
     id: uuid('id').defaultRandom().primaryKey().notNull(),
@@ -96,6 +85,27 @@ export const Authors = pgTable('authors', {
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at'),
 })
+
+export const BookAuthors = pgTable(
+    'book_authors',
+    {
+        book_id: uuid('book_id').notNull(),
+        author_id: uuid('author_id').notNull(),
+    },
+    (table) => [
+        primaryKey({ columns: [table.book_id, table.author_id] }),
+        foreignKey({
+            columns: [table.book_id],
+            foreignColumns: [Books.id],
+            name: 'book_authors_book_id_fk',
+        }).onDelete('cascade'),
+        foreignKey({
+            columns: [table.author_id],
+            foreignColumns: [Authors.id],
+            name: 'book_authors_author_id_fk',
+        }).onDelete('cascade'),
+    ],
+)
 
 // ============================================
 // Application Domain Tables

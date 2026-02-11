@@ -9,7 +9,17 @@ import {
 export class CreateQuoteDto {
     @IsString()
     @IsNotEmpty()
-    bookId: string
+    userId: string
+
+    @IsString()
+    @IsOptional()
+    @IsNotEmpty()
+    bookId?: string
+
+    @IsString()
+    @IsOptional()
+    @IsNotEmpty()
+    openlibraryId?: string
 
     @IsString()
     @IsNotEmpty()
