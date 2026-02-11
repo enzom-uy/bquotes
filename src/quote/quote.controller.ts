@@ -3,16 +3,13 @@ import { Response } from 'express'
 import { QuoteService } from './quote.service'
 import { CreateQuoteDto } from './dto/create-quote.dto'
 
-@Controller('api/quotes')
+@Controller('quotes')
 export class QuoteController {
     constructor(private readonly quoteService: QuoteService) {}
 
     @Post()
-    async createQuote(
-        @Body() createQuoteDto: CreateQuoteDto,
-        @Res() res: Response,
-    ) {
-        const quote = await this.quoteService.createQuote(createQuoteDto)
+    async createQuote(@Body() quoteData: CreateQuoteDto, @Res() res: Response) {
+        const quote = await this.quoteService.createQuote(quoteData)
         return res.status(201).json(quote)
     }
 }

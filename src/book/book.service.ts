@@ -17,6 +17,10 @@ export class BookService {
         private readonly db: NodePgDatabase<typeof schema>,
     ) {}
 
+    async searchBooks(query: string, tx?: NodePgDatabase<typeof schema>) {
+        const db = tx || this.db
+    }
+
     async insertNewBook(
         openlibraryId: string,
         tx?: NodePgDatabase<typeof schema>,

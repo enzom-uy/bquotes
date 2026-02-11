@@ -5,10 +5,10 @@ import { LoggerModule } from 'nestjs-pino'
 import { ConfigModule } from '@nestjs/config'
 import { UserModule } from './user/user.module'
 import { DbModule } from './db/db.module'
-import { QuoteModule } from './quote/quote.module';
-import { OpenlibraryModule } from './openlibrary/openlibrary.module';
-import { BookModule } from './book/book.module';
-import { AuthorModule } from './author/author.module';
+import { QuoteModule } from './quote/quote.module'
+import { OpenlibraryModule } from './openlibrary/openlibrary.module'
+import { BookModule } from './book/book.module'
+import { AuthorModule } from './author/author.module'
 
 @Module({
     imports: [

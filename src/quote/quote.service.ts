@@ -28,39 +28,46 @@ export class QuoteService {
             )
         }
 
-        let bookId = quoteData.bookId
+        return this.db.transaction(async (tx) => {
+            let bookId = quoteData.bookId
+            let book: typeof schema.Books.$inferSelect | null = null
 
-        // Book doesn't exist in DB yet, create it
-        if (!bookId) {
-            const insertedBook = await this.bookService.insertNewBook(
-                quoteData.openlibraryId!,
-            )
-            bookId = insertedBook.id
-        }
+            if (!bookId) {
+                // Book doesn't exist in DB yet, create it
+                const insertedBook = await this.bookService.insertNewBook(
+                    quoteData.openlibraryId!,
+                    tx,
+                )
+                bookId = insertedBook.id
+                book = insertedBook
+            } else {
+                // Book already exists, fetch it
+                const [foundBook] = await tx
+                    .select()
+                    .from(schema.Books)
+                    .where(eq(schema.Books.id, bookId))
+                book = foundBook ?? null
+            }
 
-        const [book] = await this.db
-            .select()
-            .from(schema.Books)
-            .where(eq(schema.Books.id, bookId))
+            if (book === null) {
+                throw new NotFoundException(`Book with id ${bookId} not found.`)
+            }
 
-        if (!book) {
-            throw new NotFoundException(`Book with id ${bookId} not found.`)
-        }
+            const [quote] = await tx
+                .insert(schema.Quotes)
+                .values({
+                    book_id: bookId,
+                    user_id: quoteData.userId,
+                    text: quoteData.text,
+                    chapter: quoteData.chapter,
+                    language: quoteData.language,
+                    is_public: quoteData.isPublic,
+                    is_favorite: quoteData.isFavorite,
+                    tags: quoteData.tags,
+                })
+                .returning()
 
-        const [quote] = await this.db
-            .insert(schema.Quotes)
-            .values({
-                book_id: bookId,
-                user_id: quoteData.userId,
-                text: quoteData.text,
-                chapter: quoteData.chapter,
-                language: quoteData.language,
-                is_public: quoteData.isPublic,
-                is_favorite: quoteData.isFavorite,
-                tags: quoteData.tags,
-            })
-            .returning()
-
-        return quote
+            return quote
+        })
     }
 }

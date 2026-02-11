@@ -15,17 +15,33 @@ export class AuthorService {
         private readonly db: NodePgDatabase<typeof schema>,
     ) {}
 
+    async getAuthorById(authorId: string, tx?: NodePgDatabase<typeof schema>) {
+        const db = tx || this.db
+
+        const [author] = await db
+            .select()
+            .from(schema.Authors)
+            .where(eq(schema.Authors.id, authorId))
+
+        if (!author) {
+            throw new NotFoundException(`Author with id ${authorId} not found.`)
+        }
+
+        return author
+    }
+
     async getAuthorByOLID(
         authorOLID: string,
         tx?: NodePgDatabase<typeof schema>,
     ) {
         const db = tx || this.db
+
         const [author] = await db
             .select()
             .from(schema.Authors)
             .where(eq(schema.Authors.openlibrary_id, authorOLID))
 
-        return author || null
+        return author ?? null
     }
 
     async findOrCreateByOLID(
