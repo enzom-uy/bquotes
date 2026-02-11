@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import {
+    BadGatewayException,
+    HttpException,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common'
 import {
     OpenLibraryAuthor,
     OpenLibraryBook,
@@ -65,10 +70,20 @@ export class OpenlibraryService {
     }
 
     async getBook(openlibraryId: string) {
-        const url = new URL(`${OPENLIBRARY_BASE_URL}/books/${openlibraryId}`)
+        const url = new URL(
+            `${OPENLIBRARY_BASE_URL}/books/${openlibraryId}.json`,
+        )
 
         try {
             const response = await fetch(url)
+
+            if (response.status === 404) {
+                throw new NotFoundException('Book not found.')
+            }
+
+            if (!response.ok)
+                throw new BadGatewayException('Openlibrary API error.')
+
             const data = (await response.json()) as OpenLibraryBook
             const formattedResponse: APIOpenLibraryBookResponse = {
                 title: data.title,
@@ -80,8 +95,9 @@ export class OpenlibraryService {
 
             return formattedResponse
         } catch (error) {
+            if (error instanceof HttpException) throw error
             this.logger.error({ error }, 'Error fetching book data')
-            return null
+            throw new BadGatewayException('Could not reach OpenLibrary API.')
         }
     }
 }

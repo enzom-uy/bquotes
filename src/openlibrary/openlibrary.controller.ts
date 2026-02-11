@@ -33,5 +33,10 @@ export class OpenlibraryController {
         return res.status(200).json(author)
     }
 
-    // TODO: get book info with olid
+    @Get('book/:bookId')
+    async getBook(@Param('bookId') bookId: string, @Res() res: Response) {
+        console.log(bookId)
+        const book = await this.openlibraryService.getBook(bookId)
+        return res.status(200).json(book)
+    }
 }
