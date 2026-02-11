@@ -7,6 +7,7 @@ import { UserModule } from './user/user.module'
 import { DbModule } from './db/db.module'
 import { QuoteModule } from './quote/quote.module';
 import { OpenlibraryModule } from './openlibrary/openlibrary.module';
+import { BookModule } from './book/book.module';
 
 @Module({
     imports: [
@@ -42,6 +43,7 @@ import { OpenlibraryModule } from './openlibrary/openlibrary.module';
         DbModule,
         QuoteModule,
         OpenlibraryModule,
+        BookModule,
     ],
     controllers: [AppController],
     providers: [AppService],

@@ -1,0 +1,36 @@
+export interface APIOpenLibrarySearchResponse {
+    numFound: number
+    docs: {
+        title: string
+        author_name?: string[]
+        author_key?: string[]
+        cover_i?: number
+        first_publish_year?: number
+        key: string
+        isbn: string[]
+        edition_count?: number
+    }[]
+}
+
+export interface OpenLibraryBook {
+    title: string
+    description: string
+    covers: number[]
+    subjects: string[]
+    key: string
+}
+
+export type APIOpenLibraryBookResponse = OpenLibraryBook
+
+export interface OpenLibraryAuthor {
+    name: string
+    bio: string
+    birth_date: string
+    photos: number[]
+    links: Array<{ title: string; url: string; type: { key: string } }>
+    key: string
+}
+
+export interface APIOpenLibraryAuthorResponse extends OpenLibraryAuthor {
+    picture_url: string
+}

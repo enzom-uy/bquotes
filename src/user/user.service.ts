@@ -10,16 +10,16 @@ import { eq } from 'drizzle-orm'
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import * as schema from '@/db/schema'
 import { UpdateProfileDto } from './dto/update-profile.dto'
+import { PinoLogger } from 'nestjs-pino'
 
 export type User = typeof schema.user.$inferSelect
 
 @Injectable()
 export class UserService {
-    private readonly logger = new Logger(UserService.name)
-
     constructor(
         @Inject(DATABASE_CONNECTION)
         private db: NodePgDatabase<typeof schema>,
+        private readonly logger: PinoLogger,
     ) {}
 
     async findByEmail(email: string) {

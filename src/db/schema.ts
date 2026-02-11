@@ -88,6 +88,7 @@ export const Books = pgTable(
 export const Authors = pgTable('authors', {
     id: uuid('id').defaultRandom().primaryKey().notNull(),
     name: text('name').notNull(),
+    openlibrary_id: text('openlibrary_id').unique(),
     born: text('born'),
     death: text('death'),
     image_url: text('image_url'),

@@ -1,0 +1,37 @@
+import { Controller, Get, Param, Query, Req, Res } from '@nestjs/common'
+import { OpenlibraryService } from './openlibrary.service'
+import { PinoLogger } from 'nestjs-pino'
+import { Request, Response } from 'express'
+
+@Controller('openlibrary')
+export class OpenlibraryController {
+    constructor(
+        private readonly openlibraryService: OpenlibraryService,
+        private readonly logger: PinoLogger,
+    ) {}
+
+    @Get('search')
+    async searchBook(
+        @Req() req: Request,
+        @Res() res: Response,
+        @Query('query') query: string,
+        @Query('limit') limit?: number,
+    ) {
+        if (!query) {
+            return res.status(400).json({ message: 'Query is required' })
+        }
+        const result = await this.openlibraryService.searchBook(query, limit)
+        if (!result) {
+            return res.status(404).json({ message: 'No results found' })
+        }
+        return res.status(200).json(result)
+    }
+
+    @Get('author/:authorId')
+    async getAuthor(@Param('authorId') authorId: string, @Res() res: Response) {
+        const author = await this.openlibraryService.getAuthor(authorId)
+        return res.status(200).json(author)
+    }
+
+    // TODO: get book info with olid
+}
