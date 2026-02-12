@@ -5,10 +5,7 @@ export interface APIOpenLibrarySearchResponse {
         author_name?: string[]
         author_key?: string[]
         cover_i?: number
-        first_publish_year?: number
         key: string
-        isbn: string[]
-        edition_count?: number
     }[]
 }
 

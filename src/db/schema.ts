@@ -66,6 +66,7 @@ export const verification = pgTable('verification', {
 export const Books = pgTable('books', {
     id: uuid('id').defaultRandom().primaryKey().notNull(),
     title: text('title').notNull(),
+    author_name: text('author_name'),
     summary: text('summary'),
     cover_url: text('cover_url'),
     openlibrary_id: text('openlibrary_id').notNull().unique(),
@@ -119,7 +120,6 @@ export const Quotes = pgTable('quotes', {
         .references(() => user.id, { onDelete: 'cascade' }),
     text: text('text').notNull(),
     chapter: text('chapter'),
-    language: text('language'),
     is_public: boolean('is_public').default(false).notNull(),
     is_favorite: boolean('is_favorite').default(false).notNull(),
     tags: text('tags').array(),

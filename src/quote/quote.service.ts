@@ -8,7 +8,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { PinoLogger } from 'nestjs-pino'
 import * as schema from '@/db/schema'
 import { eq } from 'drizzle-orm'
-import { CreateQuoteDto } from './dto/create-quote.dto'
+import { CreateQuotesDto } from './dto/create-quote.dto'
 import { BookService } from '@/book/book.service'
 import { DATABASE_CONNECTION } from '@/db/db.module'
 
@@ -21,27 +21,27 @@ export class QuoteService {
         private readonly db: NodePgDatabase<typeof schema>,
     ) {}
 
-    async createQuote(quoteData: CreateQuoteDto) {
-        if (!quoteData.bookId && !quoteData.openlibraryId) {
+    async createQuotes(data: CreateQuotesDto) {
+        if (!data.bookId && !data.openlibraryId) {
             throw new BadRequestException(
                 'Either bookId or openlibraryId must be provided.',
             )
         }
 
         return this.db.transaction(async (tx) => {
-            let bookId = quoteData.bookId
+            let bookId = data.bookId
             let book: typeof schema.Books.$inferSelect | null = null
 
             if (!bookId) {
-                // Book doesn't exist in DB yet, create it
+                console.log(data)
                 const insertedBook = await this.bookService.insertNewBook(
-                    quoteData.openlibraryId!,
+                    data.openlibraryId!,
                     tx,
                 )
+
                 bookId = insertedBook.id
                 book = insertedBook
             } else {
-                // Book already exists, fetch it
                 const [foundBook] = await tx
                     .select()
                     .from(schema.Books)
@@ -53,21 +53,22 @@ export class QuoteService {
                 throw new NotFoundException(`Book with id ${bookId} not found.`)
             }
 
-            const [quote] = await tx
+            const quotes = await tx
                 .insert(schema.Quotes)
-                .values({
-                    book_id: bookId,
-                    user_id: quoteData.userId,
-                    text: quoteData.text,
-                    chapter: quoteData.chapter,
-                    language: quoteData.language,
-                    is_public: quoteData.isPublic,
-                    is_favorite: quoteData.isFavorite,
-                    tags: quoteData.tags,
-                })
+                .values(
+                    data.quotes.map((q) => ({
+                        book_id: bookId,
+                        user_id: data.userId,
+                        text: q.text,
+                        chapter: q.chapter,
+                        is_public: q.isPublic,
+                        is_favorite: q.isFavorite,
+                        tags: q.tags,
+                    })),
+                )
                 .returning()
 
-            return quote
+            return quotes
         })
     }
 }

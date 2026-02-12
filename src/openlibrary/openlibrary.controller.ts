@@ -18,8 +18,10 @@ export class OpenlibraryController {
         @Query('limit') limit?: number,
     ) {
         if (!query) {
+            console.log('Query is required')
             return res.status(400).json({ message: 'Query is required' })
         }
+        console.log('Query: ', query)
         const result = await this.openlibraryService.searchBook(query, limit)
         if (!result) {
             return res.status(404).json({ message: 'No results found' })

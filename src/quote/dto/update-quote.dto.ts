@@ -21,10 +21,6 @@ export class UpdateQuoteDto {
     @IsOptional()
     chapter?: string
 
-    @IsString()
-    @IsOptional()
-    language?: string
-
     @IsBoolean()
     @IsOptional()
     isPublic: boolean

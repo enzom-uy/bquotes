@@ -1,12 +1,36 @@
+import { Type } from 'class-transformer'
 import {
+    ArrayMinSize,
     IsArray,
     IsBoolean,
     IsNotEmpty,
     IsOptional,
     IsString,
+    ValidateNested,
 } from 'class-validator'
 
-export class CreateQuoteDto {
+export class QuoteItemDto {
+    @IsString()
+    @IsNotEmpty()
+    text: string
+
+    @IsString()
+    @IsOptional()
+    chapter?: string
+
+    @IsBoolean()
+    isPublic: boolean
+
+    @IsBoolean()
+    isFavorite: boolean
+
+    @IsArray()
+    @IsString({ each: true })
+    @IsOptional()
+    tags?: string[]
+}
+
+export class CreateQuotesDto {
     @IsString()
     @IsNotEmpty()
     userId: string
@@ -21,26 +45,9 @@ export class CreateQuoteDto {
     @IsNotEmpty()
     openlibraryId?: string
 
-    @IsString()
-    @IsNotEmpty()
-    text: string
-
-    @IsString()
-    @IsOptional()
-    chapter?: string
-
-    @IsString()
-    @IsOptional()
-    language?: string
-
-    @IsBoolean()
-    isPublic: boolean
-
-    @IsBoolean()
-    isFavorite: boolean
-
     @IsArray()
-    @IsString({ each: true })
-    @IsOptional()
-    tags?: string[]
+    @ValidateNested({ each: true })
+    @ArrayMinSize(1)
+    @Type(() => QuoteItemDto)
+    quotes: QuoteItemDto[]
 }
