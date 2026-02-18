@@ -123,6 +123,6 @@ export const Quotes = pgTable('quotes', {
     is_public: boolean('is_public').default(false).notNull(),
     is_favorite: boolean('is_favorite').default(false).notNull(),
     tags: text('tags').array(),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at'),
+    created_at: timestamp('created_at').defaultNow().notNull(),
+    updated_at: timestamp('updated_at'),
 })
