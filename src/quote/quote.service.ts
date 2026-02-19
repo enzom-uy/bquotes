@@ -141,7 +141,7 @@ export class QuoteService {
                         text: q.text,
                         chapter: q.chapter,
                         is_public: q.isPublic,
-                        is_favorite: q.isFavorite,
+                        is_favorite: false,
                         tags: q.tags,
                     })),
                 )
