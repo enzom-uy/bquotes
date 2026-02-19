@@ -66,7 +66,7 @@ export const verification = pgTable('verification', {
 export const Books = pgTable('books', {
     id: uuid('id').defaultRandom().primaryKey().notNull(),
     title: text('title').notNull(),
-    author_name: text('author_name'),
+    author_name: text('author_name').notNull(),
     summary: text('summary'),
     cover_url: text('cover_url'),
     openlibrary_id: text('openlibrary_id').notNull().unique(),

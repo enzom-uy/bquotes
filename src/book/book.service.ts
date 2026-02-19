@@ -34,7 +34,7 @@ export class BookService {
             })),
             ...(booksFromOpenlibrary?.map((b) => ({
                 title: b.title,
-                authorName: b.author_name,
+                authorName: b.authorName,
                 openlibraryId: b.openlibraryId,
                 coverUrl: b.coverUrl,
             })) ?? []),
@@ -83,7 +83,7 @@ export class BookService {
             authors.push(author)
         }
 
-        const authorName = authors.map((a) => a.name).join(', ') || undefined
+        const authorName = authors.map((a) => a.name).join(', ') || 'Unknown'
 
         const [insertedBook] = await db
             .insert(schema.Books)

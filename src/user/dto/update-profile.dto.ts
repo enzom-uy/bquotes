@@ -11,5 +11,5 @@ export class UpdateProfileDto {
 
     @IsString()
     @IsOptional()
-    image?: string
+    image?: string | null
 }

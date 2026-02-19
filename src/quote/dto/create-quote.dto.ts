@@ -16,7 +16,7 @@ export class QuoteItemDto {
 
     @IsString()
     @IsOptional()
-    chapter?: string
+    chapter?: string | null
 
     @IsBoolean()
     isPublic: boolean
@@ -27,7 +27,7 @@ export class QuoteItemDto {
     @IsArray()
     @IsString({ each: true })
     @IsOptional()
-    tags?: string[]
+    tags?: string[] | null
 }
 
 export class CreateQuotesDto {

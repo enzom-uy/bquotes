@@ -11,5 +11,5 @@ export class CreateUserDto {
 
     @IsString()
     @IsOptional()
-    image?: string
+    image?: string | null
 }

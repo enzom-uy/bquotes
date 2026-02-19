@@ -60,8 +60,8 @@ export class AuthorService {
             .values({
                 name: authorData.name,
                 openlibrary_id: authorOLID,
-                born: authorData.birth_date,
-                image_url: authorData.picture_url,
+                born: authorData.birthDate,
+                image_url: authorData.pictureUrl,
             })
             .returning()
 

@@ -19,7 +19,7 @@ export class UpdateQuoteDto {
 
     @IsString()
     @IsOptional()
-    chapter?: string
+    chapter?: string | null
 
     @IsBoolean()
     @IsOptional()
@@ -32,5 +32,5 @@ export class UpdateQuoteDto {
     @IsArray()
     @IsString({ each: true })
     @IsOptional()
-    tags?: string[]
+    tags?: string[] | null
 }

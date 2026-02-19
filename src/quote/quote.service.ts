@@ -11,6 +11,7 @@ import { and, count, desc, eq } from 'drizzle-orm'
 import { CreateQuotesDto } from './dto/create-quote.dto'
 import { BookService } from '@/book/book.service'
 import { DATABASE_CONNECTION } from '@/db/db.module'
+import { QuoteWithBookDto } from './dto/quote-with-book.dto'
 
 @Injectable()
 export class QuoteService {
@@ -21,7 +22,7 @@ export class QuoteService {
         private readonly db: NodePgDatabase<typeof schema>,
     ) {}
 
-    async getUserQuotesCount(userId: string) {
+    async getUserQuotesCount(userId: string): Promise<number> {
         const [quotesCount] = await this.db
             .select({ total: count() })
             .from(schema.Quotes)
@@ -30,7 +31,16 @@ export class QuoteService {
         return quotesCount.total
     }
 
-    async getUserQuotes(userId: string, page?: string, perPage?: string) {
+    async getUserQuotes(
+        userId: string,
+        page?: string,
+        perPage?: string,
+    ): Promise<{
+        data: QuoteWithBookDto[]
+        count: number
+        page: number
+        perPage: number
+    }> {
         const parsedPage = page ? parseInt(page) : 0
         const parsedPerPage = perPage ? parseInt(perPage) : 10
         const [quotes, [{ total }]] = await Promise.all([
@@ -39,14 +49,14 @@ export class QuoteService {
                     id: schema.Quotes.id,
                     text: schema.Quotes.text,
                     chapter: schema.Quotes.chapter,
-                    is_public: schema.Quotes.is_public,
-                    is_favorite: schema.Quotes.is_favorite,
+                    isPublic: schema.Quotes.is_public,
+                    isFavorite: schema.Quotes.is_favorite,
                     tags: schema.Quotes.tags,
-                    created_at: schema.Quotes.created_at,
+                    createdAt: schema.Quotes.created_at,
                     book: {
                         title: schema.Books.title,
-                        author_name: schema.Books.author_name,
-                        cover_url: schema.Books.cover_url,
+                        authorName: schema.Books.author_name,
+                        coverUrl: schema.Books.cover_url,
                     },
                 })
                 .from(schema.Quotes)
@@ -71,7 +81,7 @@ export class QuoteService {
         }
     }
 
-    async getUserFavoriteQuotes(userId: string) {
+    async getUserFavoriteQuotes(userId: string): Promise<QuoteWithBookDto[]> {
         const quotesSchema = schema.Quotes
         const booksSchema = schema.Books
         const quotes = await this.db
@@ -132,7 +142,7 @@ export class QuoteService {
                 throw new NotFoundException(`Book with id ${bookId} not found.`)
             }
 
-            const quotes = await tx
+            const insertedQuotes = await tx
                 .insert(schema.Quotes)
                 .values(
                     data.quotes.map((q) => ({
@@ -147,7 +157,17 @@ export class QuoteService {
                 )
                 .returning()
 
-            return quotes
+            return insertedQuotes.map((q) => ({
+                id: q.id,
+                bookId: q.book_id,
+                userId: q.user_id,
+                text: q.text,
+                chapter: q.chapter,
+                isPublic: q.is_public,
+                isFavorite: q.is_favorite,
+                tags: q.tags,
+                createdAt: q.created_at,
+            }))
         })
     }
 }

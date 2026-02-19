@@ -23,12 +23,12 @@ export type APIOpenLibraryBookResponse = OpenLibraryBook
 export interface OpenLibraryAuthor {
     name: string
     bio: string
-    birth_date: string
+    birthDate: string
     photos: number[]
     links: Array<{ title: string; url: string; type: { key: string } }>
     key: string
 }
 
 export interface APIOpenLibraryAuthorResponse extends OpenLibraryAuthor {
-    picture_url: string
+    pictureUrl: string
 }

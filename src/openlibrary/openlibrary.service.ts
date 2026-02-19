@@ -36,7 +36,7 @@ export class OpenlibraryService {
             console.log('Raw API data:', data.docs)
             const transformedResults = data.docs.map((doc) => ({
                 title: doc.title,
-                author_name:
+                authorName:
                     doc.author_name && doc.author_name.length > 0
                         ? doc.author_name
                         : null,
@@ -63,11 +63,11 @@ export class OpenlibraryService {
             const formattedResponse: APIOpenLibraryAuthorResponse = {
                 name: authorData.name,
                 bio: authorData.bio,
-                birth_date: authorData.birth_date,
+                birthDate: authorData.birth_date,
                 photos: authorData.photos,
                 links: authorData.links,
                 key: authorData.key,
-                picture_url: `https://covers.openlibrary.org/a/olid/${authorId}-L.jpg`,
+                pictureUrl: `https://covers.openlibrary.org/a/olid/${authorId}-L.jpg`,
             }
             return formattedResponse
         } catch (error) {
