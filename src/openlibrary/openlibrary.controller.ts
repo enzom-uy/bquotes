@@ -18,10 +18,8 @@ export class OpenlibraryController {
         @Query('limit') limit?: number,
     ) {
         if (!query) {
-            console.log('Query is required')
             return res.status(400).json({ message: 'Query is required' })
         }
-        console.log('Query: ', query)
         const result = await this.openlibraryService.searchBook(query, limit)
         if (!result) {
             return res.status(404).json({ message: 'No results found' })
@@ -37,7 +35,6 @@ export class OpenlibraryController {
 
     @Get('book/:bookId')
     async getBook(@Param('bookId') bookId: string, @Res() res: Response) {
-        console.log(bookId)
         const book = await this.openlibraryService.getBook(bookId)
         return res.status(200).json(book)
     }

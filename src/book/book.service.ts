@@ -60,7 +60,6 @@ export class BookService {
     ) {
         const db = tx || this.db
 
-        console.log(openlibraryId)
         const book = await this.openlibraryService.getBook(openlibraryId)
 
         if (!book) {

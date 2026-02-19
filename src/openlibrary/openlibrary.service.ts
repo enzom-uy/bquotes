@@ -33,7 +33,6 @@ export class OpenlibraryService {
         try {
             const response = await fetch(url.href)
             const data = (await response.json()) as APIOpenLibrarySearchResponse
-            console.log('Raw API data:', data.docs)
             const transformedResults = data.docs.map((doc) => ({
                 title: doc.title,
                 authorName:

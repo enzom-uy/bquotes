@@ -110,7 +110,6 @@ export class QuoteService {
     }
 
     async createQuotes(data: CreateQuotesDto) {
-        console.log(data)
         if (!data.bookId && !data.openlibraryId) {
             throw new BadRequestException(
                 'Either bookId or openlibraryId must be provided.',
@@ -122,7 +121,6 @@ export class QuoteService {
             let book: typeof schema.Books.$inferSelect | null = null
 
             if (!bookId) {
-                console.log(data)
                 const insertedBook = await this.bookService.insertNewBook(
                     data.openlibraryId!,
                     tx,
