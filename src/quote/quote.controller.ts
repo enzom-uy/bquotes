@@ -13,7 +13,15 @@ export class QuoteController {
         return res.status(201).json(quotes)
     }
 
-    // TODO: get user quotes con pagination
+    @Get('/:userId/count')
+    async getUserQuotesCount(
+        @Param('userId') userId: string,
+        @Res() res: Response,
+    ) {
+        const quotesCount = await this.quoteService.getUserQuotesCount(userId)
+        return res.status(200).json(quotesCount)
+    }
+
     @Get('/:userId')
     async getUserQuotes(
         @Param('userId') userId: string,
@@ -26,6 +34,15 @@ export class QuoteController {
             page,
             perPage,
         )
+        return res.status(200).json(quotes)
+    }
+
+    @Get('/:userId/favorites')
+    async getUserFavoriteQuotes(
+        @Param('userId') userId: string,
+        @Res() res: Response,
+    ) {
+        const quotes = await this.quoteService.getUserFavoriteQuotes(userId)
         return res.status(200).json(quotes)
     }
 }

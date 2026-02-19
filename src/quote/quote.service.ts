@@ -7,7 +7,7 @@ import {
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { PinoLogger } from 'nestjs-pino'
 import * as schema from '@/db/schema'
-import { count, desc, eq } from 'drizzle-orm'
+import { and, count, desc, eq } from 'drizzle-orm'
 import { CreateQuotesDto } from './dto/create-quote.dto'
 import { BookService } from '@/book/book.service'
 import { DATABASE_CONNECTION } from '@/db/db.module'
@@ -20,6 +20,15 @@ export class QuoteService {
         @Inject(DATABASE_CONNECTION)
         private readonly db: NodePgDatabase<typeof schema>,
     ) {}
+
+    async getUserQuotesCount(userId: string) {
+        const [quotesCount] = await this.db
+            .select({ total: count() })
+            .from(schema.Quotes)
+            .where(eq(schema.Quotes.user_id, userId))
+
+        return quotesCount.total
+    }
 
     async getUserQuotes(userId: string, page?: string, perPage?: string) {
         const parsedPage = page ? parseInt(page) : 0
@@ -60,6 +69,34 @@ export class QuoteService {
             page: parsedPage,
             perPage: parsedPerPage,
         }
+    }
+
+    async getUserFavoriteQuotes(userId: string) {
+        const quotesSchema = schema.Quotes
+        const booksSchema = schema.Books
+        const quotes = await this.db
+            .select({
+                id: quotesSchema.id,
+                text: quotesSchema.text,
+                isPublic: quotesSchema.is_public,
+                isFavorite: quotesSchema.is_favorite,
+                tags: quotesSchema.tags,
+                createdAt: quotesSchema.created_at,
+                book: {
+                    title: booksSchema.title,
+                    authorName: booksSchema.author_name,
+                    coverUrl: booksSchema.cover_url,
+                },
+            })
+            .from(quotesSchema)
+            .innerJoin(booksSchema, eq(quotesSchema.book_id, booksSchema.id))
+            .where(
+                and(
+                    eq(quotesSchema.user_id, userId),
+                    eq(quotesSchema.is_favorite, true),
+                ),
+            )
+        return quotes
     }
 
     async createQuotes(data: CreateQuotesDto) {
