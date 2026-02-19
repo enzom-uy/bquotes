@@ -18,27 +18,55 @@ export class BookService {
         private readonly db: NodePgDatabase<typeof schema>,
     ) {}
 
+    private normalizeString(str: string): string {
+        if (!str) return ''
+        return str
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^\w\s]/g, '')
+            .trim()
+    }
+
     async searchBooks(query: string) {
         const [booksFromDb, booksFromOpenlibrary] = await Promise.all([
             this.searchBooksFromDb(query),
             this.openlibraryService.searchBook(query),
         ])
 
-        return [
-            ...booksFromDb.map((b) => ({
-                title: b.title,
-                authorName: b.author_name,
-                bookId: b.id,
-                openlibraryId: b.openlibrary_id,
-                coverUrl: b.cover_url,
-            })),
-            ...(booksFromOpenlibrary?.map((b) => ({
+        const dbResults = booksFromDb.map((b) => ({
+            title: b.title,
+            authorName: b.author_name,
+            bookId: b.id,
+            openlibraryId: b.openlibrary_id,
+            coverUrl: b.cover_url,
+        }))
+
+        const dbIdentifiers = new Set(
+            booksFromDb.map((b) => {
+                if (b.openlibrary_id) {
+                    return `ol:${b.openlibrary_id}`
+                }
+                return `${this.normalizeString(b.title)}_${this.normalizeString(b.author_name)}`
+            }),
+        )
+        const uniqueOlResults = (booksFromOpenlibrary ?? [])
+            .filter((book) => {
+                const identifier = book.openlibraryId
+                    ? `ol:${book.openlibraryId}`
+                    : `${this.normalizeString(book.title)}_${this.normalizeString(book.authorName?.[0] || '')}`
+
+                return !dbIdentifiers.has(identifier)
+            })
+            .map((b) => ({
                 title: b.title,
                 authorName: b.authorName,
                 openlibraryId: b.openlibraryId,
                 coverUrl: b.coverUrl,
-            })) ?? []),
-        ]
+                source: 'openlibrary' as const,
+            }))
+
+        return [...dbResults, ...uniqueOlResults]
     }
 
     private async searchBooksFromDb(query: string) {

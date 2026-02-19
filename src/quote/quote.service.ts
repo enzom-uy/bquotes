@@ -7,7 +7,7 @@ import {
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { PinoLogger } from 'nestjs-pino'
 import * as schema from '@/db/schema'
-import { and, count, desc, eq } from 'drizzle-orm'
+import { and, count, desc, eq, sql } from 'drizzle-orm'
 import { CreateQuotesDto } from './dto/create-quote.dto'
 import { BookService } from '@/book/book.service'
 import { DATABASE_CONNECTION } from '@/db/db.module'
@@ -79,6 +79,59 @@ export class QuoteService {
             page: parsedPage,
             perPage: parsedPerPage,
         }
+    }
+
+    async searchUserQuotes(
+        userId: string,
+        query: string,
+    ): Promise<QuoteWithBookDto[]> {
+        const sanitizedQuery = query.replace(/[^\w\s\u00C0-\u017F]/gi, '') // Incluye acentos
+
+        const rankExpression = sql<number>`
+            ts_rank(
+              to_tsvector('simple', 
+                coalesce(${schema.Quotes.text}, '') || ' ' || 
+                coalesce(array_to_string(${schema.Quotes.tags}, ' '), '') || ' ' ||
+                coalesce(${schema.Books.title}, '') || ' ' ||
+                coalesce(${schema.Books.author_name}, '')
+              ),
+              plainto_tsquery('simple', ${sanitizedQuery})
+            )
+          `
+
+        const quotes = await this.db
+            .select({
+                id: schema.Quotes.id,
+                text: schema.Quotes.text,
+                tags: schema.Quotes.tags,
+                isPublic: schema.Quotes.is_public,
+                isFavorite: schema.Quotes.is_favorite,
+                createdAt: schema.Quotes.created_at,
+                book: {
+                    title: schema.Books.title,
+                    authorName: schema.Books.author_name,
+                    coverUrl: schema.Books.cover_url,
+                },
+            })
+            .from(schema.Quotes)
+            .innerJoin(schema.Books, eq(schema.Quotes.book_id, schema.Books.id))
+            .where(
+                and(
+                    eq(schema.Quotes.user_id, userId),
+                    sql`
+                      to_tsvector('simple', 
+                        coalesce(${schema.Quotes.text}, '') || ' ' || 
+                        coalesce(array_to_string(${schema.Quotes.tags}, ' '), '') || ' ' ||
+                        coalesce(${schema.Books.title}, '') || ' ' ||
+                        coalesce(${schema.Books.author_name}, '')
+                      ) @@ plainto_tsquery('simple', ${sanitizedQuery})
+                    `,
+                ),
+            )
+            .orderBy(desc(rankExpression))
+            .limit(50)
+
+        return quotes
     }
 
     async getUserFavoriteQuotes(userId: string): Promise<QuoteWithBookDto[]> {

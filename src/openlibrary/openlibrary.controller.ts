@@ -12,7 +12,6 @@ export class OpenlibraryController {
 
     @Get('search')
     async searchBook(
-        @Req() req: Request,
         @Res() res: Response,
         @Query('query') query: string,
         @Query('limit') limit?: number,

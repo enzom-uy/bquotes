@@ -22,6 +22,17 @@ export class QuoteController {
         return res.status(200).json(quotesCount)
     }
 
+    @Get('/:userId/search')
+    async searchUserQuotes(
+        @Param('userId') userId: string,
+        @Query('query') query: string,
+        @Res() res: Response,
+    ) {
+        const quotes = await this.quoteService.searchUserQuotes(userId, query)
+
+        return res.status(200).json(quotes)
+    }
+
     @Get('/:userId')
     async getUserQuotes(
         @Param('userId') userId: string,

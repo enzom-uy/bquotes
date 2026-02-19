@@ -12,7 +12,7 @@ import * as schema from '@/db/schema'
 import { UpdateProfileDto } from './dto/update-profile.dto'
 import { PinoLogger } from 'nestjs-pino'
 
-export type User = typeof schema.user.$inferSelect
+export type UserSelect = typeof schema.User.$inferSelect
 
 @Injectable()
 export class UserService {
@@ -26,8 +26,8 @@ export class UserService {
         try {
             const [foundUser] = await this.db
                 .select()
-                .from(schema.user)
-                .where(eq(schema.user.email, email))
+                .from(schema.User)
+                .where(eq(schema.User.email, email))
             return foundUser
         } catch (error) {
             this.logger.error(
@@ -44,8 +44,8 @@ export class UserService {
         try {
             const [foundUser] = await this.db
                 .select()
-                .from(schema.user)
-                .where(eq(schema.user.id, userId))
+                .from(schema.User)
+                .where(eq(schema.User.id, userId))
 
             if (!foundUser) {
                 throw new NotFoundException('User not found')
@@ -71,13 +71,13 @@ export class UserService {
             }
 
             const [updatedUser] = await this.db
-                .update(schema.user)
+                .update(schema.User)
                 .set({
                     name: userData.name,
                     image: userData.image || null,
                     updatedAt: new Date(),
                 })
-                .where(eq(schema.user.email, userData.email))
+                .where(eq(schema.User.email, userData.email))
                 .returning()
 
             return updatedUser

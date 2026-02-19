@@ -33,7 +33,10 @@ export class OpenlibraryService {
         try {
             const response = await fetch(url.href)
             const data = (await response.json()) as APIOpenLibrarySearchResponse
-            const transformedResults = data.docs.map((doc) => ({
+            const booksWithAuthors = data.docs.filter(
+                (b) => b.author_name !== undefined,
+            )
+            const transformedResults = booksWithAuthors.map((doc) => ({
                 title: doc.title,
                 authorName:
                     doc.author_name && doc.author_name.length > 0

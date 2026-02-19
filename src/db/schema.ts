@@ -13,7 +13,7 @@ import {
 // Better Auth Tables
 // ============================================
 
-export const user = pgTable('user', {
+export const User = pgTable('user', {
     id: text('id').primaryKey(),
     name: text('name').notNull(),
     email: text('email').notNull().unique(),
@@ -23,7 +23,7 @@ export const user = pgTable('user', {
     updatedAt: timestamp('updatedAt').notNull(),
 })
 
-export const session = pgTable('session', {
+export const Session = pgTable('session', {
     id: text('id').primaryKey(),
     expiresAt: timestamp('expiresAt').notNull(),
     token: text('token').notNull().unique(),
@@ -33,16 +33,16 @@ export const session = pgTable('session', {
     userAgent: text('userAgent'),
     userId: text('userId')
         .notNull()
-        .references(() => user.id, { onDelete: 'cascade' }),
+        .references(() => User.id, { onDelete: 'cascade' }),
 })
 
-export const account = pgTable('account', {
+export const Account = pgTable('account', {
     id: text('id').primaryKey(),
     accountId: text('accountId').notNull(),
     providerId: text('providerId').notNull(),
     userId: text('userId')
         .notNull()
-        .references(() => user.id, { onDelete: 'cascade' }),
+        .references(() => User.id, { onDelete: 'cascade' }),
     accessToken: text('accessToken'),
     refreshToken: text('refreshToken'),
     idToken: text('idToken'),
@@ -54,7 +54,7 @@ export const account = pgTable('account', {
     updatedAt: timestamp('updatedAt').notNull(),
 })
 
-export const verification = pgTable('verification', {
+export const Verification = pgTable('verification', {
     id: text('id').primaryKey(),
     identifier: text('identifier').notNull(),
     value: text('value').notNull(),
@@ -90,8 +90,12 @@ export const Authors = pgTable('authors', {
 export const BookAuthors = pgTable(
     'book_authors',
     {
-        book_id: uuid('book_id').notNull(),
-        author_id: uuid('author_id').notNull(),
+        book_id: uuid('book_id')
+            .notNull()
+            .references(() => Books.id),
+        author_id: uuid('author_id')
+            .notNull()
+            .references(() => Authors.id),
     },
     (table) => [
         primaryKey({ columns: [table.book_id, table.author_id] }),
@@ -112,17 +116,35 @@ export const BookAuthors = pgTable(
 // Application Domain Tables
 // ============================================
 
-export const Quotes = pgTable('quotes', {
-    id: uuid('id').defaultRandom().primaryKey().notNull(),
-    book_id: uuid('book_id').notNull(),
-    user_id: text('user_id')
-        .notNull()
-        .references(() => user.id, { onDelete: 'cascade' }),
-    text: text('text').notNull(),
-    chapter: text('chapter'),
-    is_public: boolean('is_public').default(false).notNull(),
-    is_favorite: boolean('is_favorite').default(false).notNull(),
-    tags: text('tags').array(),
-    created_at: timestamp('created_at').defaultNow().notNull(),
-    updated_at: timestamp('updated_at'),
-})
+export const Quotes = pgTable(
+    'quotes',
+    {
+        id: uuid('id').defaultRandom().primaryKey().notNull(),
+        book_id: uuid('book_id')
+            .notNull()
+            .references(() => Books.id, { onDelete: 'cascade' }),
+        user_id: text('user_id')
+            .notNull()
+            .references(() => User.id, { onDelete: 'cascade' }),
+        text: text('text').notNull(),
+        chapter: text('chapter'),
+        is_public: boolean('is_public').default(false).notNull(),
+        is_favorite: boolean('is_favorite').default(false).notNull(),
+        tags: text('tags').array(),
+        created_at: timestamp('created_at').defaultNow().notNull(),
+        updated_at: timestamp('updated_at'),
+    },
+    (table) => [
+        foreignKey({
+            columns: [table.book_id],
+            foreignColumns: [Books.id],
+            name: 'quotes_book_id_fk',
+        }).onDelete('cascade'),
+
+        foreignKey({
+            columns: [table.user_id],
+            foreignColumns: [User.id],
+            name: 'quotes_book_id_fk',
+        }).onDelete('cascade'),
+    ],
+)
