@@ -6,7 +6,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { DATABASE_CONNECTION } from '@/db/db.module'
 import { AuthorService } from '@/author/author.service'
 import { extractOLIDFromKey } from '@/openlibrary/openlibrary.utils'
-import { ilike, or } from 'drizzle-orm'
+import { ilike, or, eq } from 'drizzle-orm'
 
 @Injectable()
 export class BookService {
@@ -26,6 +26,15 @@ export class BookService {
             .replace(/[\u0300-\u036f]/g, '')
             .replace(/[^\w\s]/g, '')
             .trim()
+    }
+
+    async getBookById(bookId: string) {
+        const foundBook = this.db
+            .select()
+            .from(schema.Books)
+            .where(eq(schema.Books.id, bookId))
+
+        return foundBook
     }
 
     async searchBooks(query: string) {
@@ -65,6 +74,8 @@ export class BookService {
                 coverUrl: b.coverUrl,
                 source: 'openlibrary' as const,
             }))
+        console.log('DB RESULTS: ', dbResults)
+        console.log('OL RESULTS: ', uniqueOlResults)
 
         return [...dbResults, ...uniqueOlResults]
     }

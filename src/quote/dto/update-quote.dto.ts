@@ -6,31 +6,33 @@ import {
     IsString,
 } from 'class-validator'
 
-export class UpdateQuoteDto {
+import { PartialType } from '@nestjs/swagger'
+
+export class UpdateQuoteFields {
     @IsString()
     @IsNotEmpty()
-    @IsOptional()
     bookId: string
 
     @IsString()
     @IsNotEmpty()
-    @IsOptional()
+    openlibraryId: string
+
+    @IsString()
+    @IsNotEmpty()
     text: string
 
     @IsString()
-    @IsOptional()
     chapter?: string | null
 
     @IsBoolean()
-    @IsOptional()
     isPublic: boolean
 
     @IsBoolean()
-    @IsOptional()
     isFavorite: boolean
 
     @IsArray()
     @IsString({ each: true })
-    @IsOptional()
     tags?: string[] | null
 }
+
+export class UpdateQuoteDto extends PartialType(UpdateQuoteFields) {}

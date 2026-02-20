@@ -1,7 +1,19 @@
-import { Body, Controller, Get, Param, Post, Query, Res } from '@nestjs/common'
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Patch,
+    Post,
+    Query,
+    Res,
+} from '@nestjs/common'
 import { Response } from 'express'
 import { QuoteService } from './quote.service'
 import { CreateQuotesDto } from './dto/create-quote.dto'
+import { DeleteQuotesDto } from './dto/delete-quotes.dto'
+import { UpdateQuoteDto } from './dto/update-quote.dto'
 
 @Controller('quotes')
 export class QuoteController {
@@ -28,6 +40,9 @@ export class QuoteController {
         @Query('query') query: string,
         @Res() res: Response,
     ) {
+        if (!query) {
+            return res.status(400).json({ message: 'No query provided' })
+        }
         const quotes = await this.quoteService.searchUserQuotes(userId, query)
 
         return res.status(200).json(quotes)
@@ -55,5 +70,39 @@ export class QuoteController {
     ) {
         const quotes = await this.quoteService.getUserFavoriteQuotes(userId)
         return res.status(200).json(quotes)
+    }
+
+    @Delete('/:userId')
+    async deleteUserQuotes(
+        @Param('userId') userId: string,
+        @Body() data: DeleteQuotesDto,
+        @Res() res: Response,
+    ) {
+        const { quotesIds } = data
+        if (quotesIds.length === 0) {
+            return res.status(400).json({ message: 'No quotes ids provided' })
+        }
+        const deletedQuotes = await this.quoteService.deleteUserQuotes(
+            userId,
+            quotesIds,
+        )
+        return res.status(200).json(deletedQuotes)
+    }
+
+    @Patch('/:userId')
+    async updateUserQuote(
+        @Param('userId') userId: string,
+        @Query('quoteId') quoteId: string,
+        @Body() data: UpdateQuoteDto,
+        @Res() res: Response,
+    ) {
+        console.log('Update quote triggered: ', data, quoteId, userId)
+        const updatedQuote = await this.quoteService.updateUserQuote(
+            userId,
+            quoteId,
+            data,
+        )
+        console.log('Update quote succeeded: ', updatedQuote)
+        return res.status(200).json(updatedQuote)
     }
 }

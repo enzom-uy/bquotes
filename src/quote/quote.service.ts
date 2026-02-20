@@ -7,17 +7,20 @@ import {
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { PinoLogger } from 'nestjs-pino'
 import * as schema from '@/db/schema'
-import { and, count, desc, eq, sql } from 'drizzle-orm'
+import { and, count, desc, eq, inArray, sql } from 'drizzle-orm'
 import { CreateQuotesDto } from './dto/create-quote.dto'
 import { BookService } from '@/book/book.service'
 import { DATABASE_CONNECTION } from '@/db/db.module'
 import { QuoteWithBookDto } from './dto/quote-with-book.dto'
+import { UpdateQuoteDto } from './dto/update-quote.dto'
+import { OpenlibraryService } from '@/openlibrary/openlibrary.service'
 
 @Injectable()
 export class QuoteService {
     constructor(
         private readonly logger: PinoLogger,
         private readonly bookService: BookService,
+        private readonly openlibraryService: OpenlibraryService,
         @Inject(DATABASE_CONNECTION)
         private readonly db: NodePgDatabase<typeof schema>,
     ) {}
@@ -220,5 +223,93 @@ export class QuoteService {
                 createdAt: q.created_at,
             }))
         })
+    }
+
+    async deleteUserQuotes(userId: string, quotesIds: string[]) {
+        const deletedQuotes = await this.db
+            .delete(schema.Quotes)
+            .where(
+                and(
+                    eq(schema.Quotes.user_id, userId),
+                    inArray(schema.Quotes.id, quotesIds),
+                ),
+            )
+
+        return deletedQuotes
+    }
+
+    async updateUserQuote(
+        userId: string,
+        quoteId: string,
+        data: UpdateQuoteDto,
+    ) {
+        const {
+            bookId,
+            openlibraryId,
+            text,
+            chapter,
+            isPublic,
+            isFavorite,
+            tags,
+        } = data
+
+        const updatedBookIsFromOL = openlibraryId && !bookId
+        const updatedBookIsFromDB = bookId && !openlibraryId
+        let finalBook: typeof schema.Books.$inferSelect | null = null
+
+        // I know that if the quote update returns an error this book will not have any quote associated with it
+        // but honestly thats not a big deal since I want to keep feeding my db with books
+        if (updatedBookIsFromOL) {
+            const insertedBook =
+                await this.bookService.insertNewBook(openlibraryId)
+            finalBook = insertedBook
+        }
+
+        if (updatedBookIsFromDB) {
+            const [foundBook] = await this.bookService.getBookById(bookId)
+            finalBook = foundBook
+        }
+
+        const quoteUpdateData = {
+            text,
+            chapter,
+            is_public: isPublic,
+            is_favorite: isFavorite,
+            tags,
+            ...(finalBook && { book_id: finalBook.id }),
+            updated_at: new Date(),
+        } satisfies Partial<typeof schema.Quotes.$inferInsert>
+
+        const [updatedQuote] = await this.db
+            .update(schema.Quotes)
+            .set(quoteUpdateData)
+            .where(
+                and(
+                    eq(schema.Quotes.id, quoteId),
+                    eq(schema.Quotes.user_id, userId),
+                ),
+            )
+            .returning()
+
+        if (!updatedQuote) {
+            throw new NotFoundException(
+                'Quote not found or does not belong to user',
+            )
+        }
+
+        return {
+            id: updatedQuote.id,
+            isFavorite: updatedQuote.is_favorite,
+            text: updatedQuote.text,
+            chapter: updatedQuote.chapter,
+            isPublic: updatedQuote.is_public,
+            tags: updatedQuote.tags,
+            createdAt: updatedQuote.created_at,
+            // book: {
+            //     title: finalBook.title,
+            //     authorName: finalBook.author_name,
+            //     coverUrl: finalBook.cover_url,
+            // },
+        }
     }
 }
