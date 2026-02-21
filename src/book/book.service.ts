@@ -74,8 +74,6 @@ export class BookService {
                 coverUrl: b.coverUrl,
                 source: 'openlibrary' as const,
             }))
-        console.log('DB RESULTS: ', dbResults)
-        console.log('OL RESULTS: ', uniqueOlResults)
 
         return [...dbResults, ...uniqueOlResults]
     }
@@ -96,6 +94,7 @@ export class BookService {
     async insertNewBook(
         openlibraryId: string,
         tx?: NodePgDatabase<typeof schema>,
+        coverUrl?: string, // DO NOT REMOVE: this is for when adding a new book when updating quote, sometimes the cover url is not available via OLID API idk why and it breaks everything.
     ) {
         const db = tx || this.db
 
@@ -131,10 +130,22 @@ export class BookService {
                 summary: book.description,
                 cover_url: book.covers?.[0]
                     ? `https://covers.openlibrary.org/b/id/${book.covers[0]}-M.jpg`
-                    : undefined,
+                    : coverUrl
+                      ? coverUrl
+                      : undefined,
                 openlibrary_id: openlibraryId,
             })
+            .onConflictDoNothing({ target: schema.Books.openlibrary_id })
             .returning()
+
+        if (!insertedBook) {
+            return await db
+                .select()
+                .from(schema.Books)
+                .where(eq(schema.Books.openlibrary_id, openlibraryId))
+                .limit(1)
+                .then((rows) => rows[0])
+        }
 
         for (const author of authors) {
             await db.insert(schema.BookAuthors).values({

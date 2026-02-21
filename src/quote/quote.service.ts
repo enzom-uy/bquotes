@@ -251,6 +251,7 @@ export class QuoteService {
             isPublic,
             isFavorite,
             tags,
+            coverUrl,
         } = data
 
         const updatedBookIsFromOL = openlibraryId && !bookId
@@ -260,8 +261,11 @@ export class QuoteService {
         // I know that if the quote update returns an error this book will not have any quote associated with it
         // but honestly thats not a big deal since I want to keep feeding my db with books
         if (updatedBookIsFromOL) {
-            const insertedBook =
-                await this.bookService.insertNewBook(openlibraryId)
+            const insertedBook = await this.bookService.insertNewBook(
+                openlibraryId,
+                undefined,
+                coverUrl,
+            )
             finalBook = insertedBook
         }
 

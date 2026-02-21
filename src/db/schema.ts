@@ -21,7 +21,7 @@ export const User = pgTable('user', {
     image: text('image'),
     createdAt: timestamp('createdAt').notNull(),
     updatedAt: timestamp('updatedAt').notNull(),
-})
+}).enableRLS()
 
 export const Session = pgTable('session', {
     id: text('id').primaryKey(),
@@ -34,7 +34,7 @@ export const Session = pgTable('session', {
     userId: text('userId')
         .notNull()
         .references(() => User.id, { onDelete: 'cascade' }),
-})
+}).enableRLS()
 
 export const Account = pgTable('account', {
     id: text('id').primaryKey(),
@@ -52,7 +52,7 @@ export const Account = pgTable('account', {
     password: text('password'),
     createdAt: timestamp('createdAt').notNull(),
     updatedAt: timestamp('updatedAt').notNull(),
-})
+}).enableRLS()
 
 export const Verification = pgTable('verification', {
     id: text('id').primaryKey(),
@@ -61,7 +61,7 @@ export const Verification = pgTable('verification', {
     expiresAt: timestamp('expiresAt').notNull(),
     createdAt: timestamp('createdAt'),
     updatedAt: timestamp('updatedAt'),
-})
+}).enableRLS()
 
 export const Books = pgTable('books', {
     id: uuid('id').defaultRandom().primaryKey().notNull(),
@@ -73,7 +73,7 @@ export const Books = pgTable('books', {
 
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at'),
-})
+}).enableRLS()
 
 export const Authors = pgTable('authors', {
     id: uuid('id').defaultRandom().primaryKey().notNull(),
@@ -85,7 +85,7 @@ export const Authors = pgTable('authors', {
 
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at'),
-})
+}).enableRLS()
 
 export const BookAuthors = pgTable(
     'book_authors',
@@ -110,7 +110,7 @@ export const BookAuthors = pgTable(
             name: 'book_authors_author_id_fk',
         }).onDelete('cascade'),
     ],
-)
+).enableRLS()
 
 // ============================================
 // Application Domain Tables
@@ -147,4 +147,4 @@ export const Quotes = pgTable(
             name: 'quotes_book_id_fk',
         }).onDelete('cascade'),
     ],
-)
+).enableRLS()

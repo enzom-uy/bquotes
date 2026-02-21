@@ -18,6 +18,9 @@ export class UpdateQuoteFields {
     openlibraryId: string
 
     @IsString()
+    coverUrl: string
+
+    @IsString()
     @IsNotEmpty()
     text: string
 

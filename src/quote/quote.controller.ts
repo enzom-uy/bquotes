@@ -96,13 +96,11 @@ export class QuoteController {
         @Body() data: UpdateQuoteDto,
         @Res() res: Response,
     ) {
-        console.log('Update quote triggered: ', data, quoteId, userId)
         const updatedQuote = await this.quoteService.updateUserQuote(
             userId,
             quoteId,
             data,
         )
-        console.log('Update quote succeeded: ', updatedQuote)
         return res.status(200).json(updatedQuote)
     }
 }
