@@ -1,4 +1,5 @@
 import { Controller, Get, Param, Query, Req, Res } from '@nestjs/common'
+import { Throttle } from '@nestjs/throttler'
 import { OpenlibraryService } from './openlibrary.service'
 import { PinoLogger } from 'nestjs-pino'
 import { Request, Response } from 'express'
@@ -11,6 +12,7 @@ export class OpenlibraryController {
     ) {}
 
     @Get('search')
+    @Throttle({ external: { limit: 10, ttl: 60000 } })
     async searchBook(
         @Res() res: Response,
         @Query('query') query: string,
@@ -27,12 +29,14 @@ export class OpenlibraryController {
     }
 
     @Get('author/:authorId')
+    @Throttle({ external: { limit: 10, ttl: 60000 } })
     async getAuthor(@Param('authorId') authorId: string, @Res() res: Response) {
         const author = await this.openlibraryService.getAuthor(authorId)
         return res.status(200).json(author)
     }
 
     @Get('book/:bookId')
+    @Throttle({ external: { limit: 10, ttl: 60000 } })
     async getBook(@Param('bookId') bookId: string, @Res() res: Response) {
         const book = await this.openlibraryService.getBook(bookId)
         return res.status(200).json(book)

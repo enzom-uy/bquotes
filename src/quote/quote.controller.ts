@@ -9,6 +9,7 @@ import {
     Query,
     Res,
 } from '@nestjs/common'
+import { Throttle } from '@nestjs/throttler'
 import { Response } from 'express'
 import { QuoteService } from './quote.service'
 import { CreateQuotesDto } from './dto/create-quote.dto'
@@ -35,6 +36,7 @@ export class QuoteController {
     }
 
     @Get('/:userId/search')
+    @Throttle({ search: { limit: 20, ttl: 60000 } })
     async searchUserQuotes(
         @Param('userId') userId: string,
         @Query('query') query: string,

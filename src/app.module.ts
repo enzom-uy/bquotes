@@ -9,9 +9,29 @@ import { QuoteModule } from './quote/quote.module'
 import { OpenlibraryModule } from './openlibrary/openlibrary.module'
 import { BookModule } from './book/book.module'
 import { AuthorModule } from './author/author.module'
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
 
 @Module({
     imports: [
+        ThrottlerModule.forRoot({
+            throttlers: [
+                {
+                    name: 'default',
+                    ttl: 60000,
+                    limit: 100,
+                },
+                {
+                    name: 'search',
+                    ttl: 60000,
+                    limit: 20,
+                },
+                {
+                    name: 'external',
+                    ttl: 60000,
+                    limit: 10,
+                },
+            ],
+        }),
         ConfigModule.forRoot({
             isGlobal: true,
         }),
@@ -48,6 +68,12 @@ import { AuthorModule } from './author/author.module'
         AuthorModule,
     ],
     controllers: [AppController],
-    providers: [AppService],
+    providers: [
+        AppService,
+        {
+            provide: 'APP_GUARD',
+            useClass: ThrottlerGuard,
+        },
+    ],
 })
 export class AppModule {}
