@@ -8,6 +8,7 @@ import * as cookieParser from 'cookie-parser'
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, {
         bufferLogs: true,
+        bodyParser: false,
     })
 
     app.useGlobalInterceptors(new LoggerErrorInterceptor())
@@ -24,14 +25,14 @@ async function bootstrap() {
     const port = process.env.PORT ?? 5000
     app.enableCors({
         origin: [
-            'http://localhost:3000',
+            process.env.BACKEND_URL,
             'http://localhost:4321',
             process.env.FRONTEND_URL,
         ],
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
         credentials: true,
     })
-    app.use(cookieParser())
+    // app.use(cookieParser())
 
     await app.listen(port)
 

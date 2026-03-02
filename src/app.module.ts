@@ -10,6 +10,8 @@ import { OpenlibraryModule } from './openlibrary/openlibrary.module'
 import { BookModule } from './book/book.module'
 import { AuthorModule } from './author/author.module'
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
+import { AuthModule } from '@thallesp/nestjs-better-auth'
+import { auth } from './lib/auth'
 
 @Module({
     imports: [
@@ -59,6 +61,9 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
                 },
             },
         }),
+        AuthModule.forRoot({
+            auth,
+        }),
 
         UserModule,
         DbModule,
@@ -70,10 +75,10 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
     controllers: [AppController],
     providers: [
         AppService,
-        {
-            provide: 'APP_GUARD',
-            useClass: ThrottlerGuard,
-        },
+        // {
+        //     provide: 'APP_GUARD',
+        //     useClass: ThrottlerGuard,
+        // },
     ],
 })
 export class AppModule {}

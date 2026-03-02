@@ -6,9 +6,13 @@ import {
     HttpStatus,
     Patch,
     Param,
+    Res,
 } from '@nestjs/common'
 import { UserService } from './user.service'
 import { UpdateProfileDto } from './dto/update-profile.dto'
+import { auth } from '@/lib/auth'
+import { AllowAnonymous } from '@thallesp/nestjs-better-auth'
+import { Response } from 'express'
 
 // TODO: cloudinary image upload endpoint + service
 
