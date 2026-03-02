@@ -19,4 +19,10 @@ export const auth = betterAuth({
     logger: {
         level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
     },
+    advanced: {
+        defaultCookieAttributes: {
+            sameSite: 'none',
+            secure: process.env.NODE_ENV === 'production',
+        },
+    },
 })
