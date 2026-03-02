@@ -3,7 +3,6 @@ import { AppModule } from './app.module'
 import { Logger, LoggerErrorInterceptor } from 'nestjs-pino'
 import { ValidationPipe } from '@nestjs/common'
 import 'src/db/db.module'
-import * as cookieParser from 'cookie-parser'
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, {
