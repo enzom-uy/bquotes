@@ -25,6 +25,32 @@ export class QuoteService {
         private readonly db: NodePgDatabase<typeof schema>,
     ) {}
 
+    async getQuote(quoteId: string): Promise<QuoteWithBookDto> {
+        const [quote] = await this.db
+            .select({
+                id: schema.Quotes.id,
+                text: schema.Quotes.text,
+                chapter: schema.Quotes.chapter,
+                isPublic: schema.Quotes.is_public,
+                isFavorite: schema.Quotes.is_favorite,
+                tags: schema.Quotes.tags,
+                userId: schema.Quotes.user_id,
+                createdAt: schema.Quotes.created_at,
+                book: {
+                    title: schema.Books.title,
+                    authorName: schema.Books.author_name,
+                    coverUrl: schema.Books.cover_url,
+                },
+            })
+            .from(schema.Quotes)
+            .innerJoin(schema.Books, eq(schema.Quotes.book_id, schema.Books.id))
+            .where(eq(schema.Quotes.id, quoteId))
+
+        const result = quote
+
+        return result
+    }
+
     async getUserQuotesCount(userId: string): Promise<number> {
         const [quotesCount] = await this.db
             .select({ total: count() })
@@ -55,6 +81,7 @@ export class QuoteService {
                     isPublic: schema.Quotes.is_public,
                     isFavorite: schema.Quotes.is_favorite,
                     tags: schema.Quotes.tags,
+                    userId: schema.Quotes.user_id,
                     createdAt: schema.Quotes.created_at,
                     book: {
                         title: schema.Books.title,
@@ -92,8 +119,8 @@ export class QuoteService {
 
         const rankExpression = sql<number>`
             ts_rank(
-              to_tsvector('simple', 
-                coalesce(${schema.Quotes.text}, '') || ' ' || 
+              to_tsvector('simple',
+                coalesce(${schema.Quotes.text}, '') || ' ' ||
                 coalesce(array_to_string(${schema.Quotes.tags}, ' '), '') || ' ' ||
                 coalesce(${schema.Books.title}, '') || ' ' ||
                 coalesce(${schema.Books.author_name}, '')
@@ -109,6 +136,7 @@ export class QuoteService {
                 tags: schema.Quotes.tags,
                 isPublic: schema.Quotes.is_public,
                 isFavorite: schema.Quotes.is_favorite,
+                userId: schema.Quotes.user_id,
                 createdAt: schema.Quotes.created_at,
                 book: {
                     title: schema.Books.title,
@@ -122,8 +150,8 @@ export class QuoteService {
                 and(
                     eq(schema.Quotes.user_id, userId),
                     sql`
-                      to_tsvector('simple', 
-                        coalesce(${schema.Quotes.text}, '') || ' ' || 
+                      to_tsvector('simple',
+                        coalesce(${schema.Quotes.text}, '') || ' ' ||
                         coalesce(array_to_string(${schema.Quotes.tags}, ' '), '') || ' ' ||
                         coalesce(${schema.Books.title}, '') || ' ' ||
                         coalesce(${schema.Books.author_name}, '')
@@ -147,6 +175,7 @@ export class QuoteService {
                 isPublic: quotesSchema.is_public,
                 isFavorite: quotesSchema.is_favorite,
                 tags: quotesSchema.tags,
+                userId: quotesSchema.user_id,
                 createdAt: quotesSchema.created_at,
                 book: {
                     title: booksSchema.title,

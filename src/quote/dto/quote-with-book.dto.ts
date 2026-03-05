@@ -18,6 +18,9 @@ export class QuoteWithBookDto extends QuoteItemDto {
     @IsString()
     id: string
 
+    @IsString()
+    userId: string
+
     @IsDate()
     @IsOptional()
     createdAt?: Date

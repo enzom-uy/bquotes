@@ -15,6 +15,7 @@ import { QuoteService } from './quote.service'
 import { CreateQuotesDto } from './dto/create-quote.dto'
 import { DeleteQuotesDto } from './dto/delete-quotes.dto'
 import { UpdateQuoteDto } from './dto/update-quote.dto'
+import { AllowAnonymous } from '@thallesp/nestjs-better-auth'
 
 @Controller('quotes')
 export class QuoteController {
@@ -24,6 +25,13 @@ export class QuoteController {
     async createQuotes(@Body() data: CreateQuotesDto, @Res() res: Response) {
         const quotes = await this.quoteService.createQuotes(data)
         return res.status(201).json(quotes)
+    }
+
+    @Get('/:quoteId')
+    @AllowAnonymous()
+    async getQuote(@Param('quoteId') quoteId: string, @Res() res: Response) {
+        const quote = await this.quoteService.getQuote(quoteId)
+        return res.status(200).json(quote)
     }
 
     @Get('/:userId/count')
