@@ -22,6 +22,7 @@ export class QuoteController {
     constructor(private readonly quoteService: QuoteService) {}
 
     @Post()
+    @Throttle({ default: { limit: 100, ttl: 60000 } })
     async createQuotes(@Body() data: CreateQuotesDto, @Res() res: Response) {
         const quotes = await this.quoteService.createQuotes(data)
         return res.status(201).json(quotes)
@@ -29,12 +30,14 @@ export class QuoteController {
 
     @Get('/:quoteId')
     @AllowAnonymous()
+    @Throttle({ default: { limit: 100, ttl: 60000 } })
     async getQuote(@Param('quoteId') quoteId: string, @Res() res: Response) {
         const quote = await this.quoteService.getQuote(quoteId)
         return res.status(200).json(quote)
     }
 
     @Get('/:userId/count')
+    @Throttle({ default: { limit: 100, ttl: 60000 } })
     async getUserQuotesCount(
         @Param('userId') userId: string,
         @Res() res: Response,
@@ -58,7 +61,8 @@ export class QuoteController {
         return res.status(200).json(quotes)
     }
 
-    @Get('/:userId')
+    @Get('/user/:userId')
+    @Throttle({ default: { limit: 100, ttl: 60000 } })
     async getUserQuotes(
         @Param('userId') userId: string,
         @Query('page') page: string,
@@ -74,6 +78,7 @@ export class QuoteController {
     }
 
     @Get('/:userId/favorites')
+    @Throttle({ default: { limit: 100, ttl: 60000 } })
     async getUserFavoriteQuotes(
         @Param('userId') userId: string,
         @Res() res: Response,
@@ -83,6 +88,7 @@ export class QuoteController {
     }
 
     @Delete('/:userId')
+    @Throttle({ default: { limit: 100, ttl: 60000 } })
     async deleteUserQuotes(
         @Param('userId') userId: string,
         @Body() data: DeleteQuotesDto,
@@ -100,6 +106,7 @@ export class QuoteController {
     }
 
     @Patch('/:userId')
+    @Throttle({ default: { limit: 100, ttl: 60000 } })
     async updateUserQuote(
         @Param('userId') userId: string,
         @Query('quoteId') quoteId: string,

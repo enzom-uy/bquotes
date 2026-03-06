@@ -22,6 +22,18 @@ export class UserService {
         private readonly logger: PinoLogger,
     ) {}
 
+    async findById(userId: string) {
+        const [foundUser] = await this.db
+            .select()
+            .from(schema.user)
+            .where(eq(schema.user.id, userId))
+
+        if (!foundUser) {
+            throw new NotFoundException('User not found')
+        }
+        return foundUser
+    }
+
     async findByEmail(email: string) {
         try {
             const [foundUser] = await this.db

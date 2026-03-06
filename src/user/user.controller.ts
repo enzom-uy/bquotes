@@ -1,39 +1,60 @@
 import {
+    BadRequestException,
     Body,
     Controller,
     Get,
-    HttpCode,
-    HttpStatus,
     Patch,
-    Param,
+    Query,
     Res,
 } from '@nestjs/common'
+import { Throttle } from '@nestjs/throttler'
 import { UserService } from './user.service'
 import { UpdateProfileDto } from './dto/update-profile.dto'
-import { auth } from '@/lib/auth'
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth'
 import { Response } from 'express'
-
-// TODO: cloudinary image upload endpoint + service
+import * as schema from '@/db/schema'
 
 @Controller('user')
 export class UserController {
     constructor(private readonly userService: UserService) {}
 
-    @Get(':email')
-    @HttpCode(HttpStatus.OK)
-    async getUser(@Param('email') email: string) {
-        const user = await this.userService.findByEmail(email)
-        return user
+    @Get()
+    @AllowAnonymous()
+    @Throttle({ default: { limit: 100, ttl: 60000 } })
+    async getUser(
+        @Res() res: Response,
+        @Query('email') email?: string,
+        @Query('id') id?: string,
+    ) {
+        if (!email && !id) {
+            return res
+                .status(400)
+                .json({ message: 'Must provide either email or id' })
+        }
+
+        if (email && id) {
+            return res
+                .status(400)
+                .json({ message: 'Cannot provide both email and id' })
+        }
+
+        if (email) {
+            const user = (await this.userService.findByEmail(
+                email,
+            )) as typeof schema.user.$inferSelect
+            return res.status(200).json(user)
+        } else if (id) {
+            const user = (await this.userService.findById(
+                id,
+            )) as typeof schema.user.$inferSelect
+            return res.status(200).json(user)
+        }
     }
 
     @Patch('profile')
-    @HttpCode(HttpStatus.CREATED)
-    async updateProfile(@Body() body: UpdateProfileDto) {
+    @Throttle({ default: { limit: 100, ttl: 60000 } })
+    async updateProfile(@Body() body: UpdateProfileDto, @Res() res: Response) {
         const updatedUser = await this.userService.updateProfile(body)
-        return {
-            message: 'Profile updated successfully',
-            user: updatedUser,
-        }
+        return res.status(200).json(updatedUser)
     }
 }
