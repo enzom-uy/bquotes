@@ -28,40 +28,7 @@ export class QuoteController {
         return res.status(201).json(quotes)
     }
 
-    @Get('/:quoteId')
-    @AllowAnonymous()
-    @Throttle({ default: { limit: 100, ttl: 60000 } })
-    async getQuote(@Param('quoteId') quoteId: string, @Res() res: Response) {
-        const quote = await this.quoteService.getQuote(quoteId)
-        return res.status(200).json(quote)
-    }
-
-    @Get('/:userId/count')
-    @Throttle({ default: { limit: 100, ttl: 60000 } })
-    async getUserQuotesCount(
-        @Param('userId') userId: string,
-        @Res() res: Response,
-    ) {
-        const quotesCount = await this.quoteService.getUserQuotesCount(userId)
-        return res.status(200).json(quotesCount)
-    }
-
-    @Get('/:userId/search')
-    @Throttle({ search: { limit: 20, ttl: 60000 } })
-    async searchUserQuotes(
-        @Param('userId') userId: string,
-        @Query('query') query: string,
-        @Res() res: Response,
-    ) {
-        if (!query) {
-            return res.status(400).json({ message: 'No query provided' })
-        }
-        const quotes = await this.quoteService.searchUserQuotes(userId, query)
-
-        return res.status(200).json(quotes)
-    }
-
-    @Get('/user/:userId')
+    @Get('user/:userId/list')
     @Throttle({ default: { limit: 100, ttl: 60000 } })
     async getUserQuotes(
         @Param('userId') userId: string,
@@ -77,7 +44,31 @@ export class QuoteController {
         return res.status(200).json(quotes)
     }
 
-    @Get('/:userId/favorites')
+    @Get('user/:userId/count')
+    @Throttle({ default: { limit: 100, ttl: 60000 } })
+    async getUserQuotesCount(
+        @Param('userId') userId: string,
+        @Res() res: Response,
+    ) {
+        const quotesCount = await this.quoteService.getUserQuotesCount(userId)
+        return res.status(200).json(quotesCount)
+    }
+
+    @Get('user/:userId/search')
+    @Throttle({ search: { limit: 20, ttl: 60000 } })
+    async searchUserQuotes(
+        @Param('userId') userId: string,
+        @Query('query') query: string,
+        @Res() res: Response,
+    ) {
+        if (!query) {
+            return res.status(400).json({ message: 'No query provided' })
+        }
+        const quotes = await this.quoteService.searchUserQuotes(userId, query)
+        return res.status(200).json(quotes)
+    }
+
+    @Get('user/:userId/favorites')
     @Throttle({ default: { limit: 100, ttl: 60000 } })
     async getUserFavoriteQuotes(
         @Param('userId') userId: string,
@@ -87,7 +78,7 @@ export class QuoteController {
         return res.status(200).json(quotes)
     }
 
-    @Delete('/:userId')
+    @Delete('user/:userId')
     @Throttle({ default: { limit: 100, ttl: 60000 } })
     async deleteUserQuotes(
         @Param('userId') userId: string,
@@ -105,7 +96,7 @@ export class QuoteController {
         return res.status(200).json(deletedQuotes)
     }
 
-    @Patch('/:userId')
+    @Patch('user/:userId')
     @Throttle({ default: { limit: 100, ttl: 60000 } })
     async updateUserQuote(
         @Param('userId') userId: string,
@@ -119,5 +110,13 @@ export class QuoteController {
             data,
         )
         return res.status(200).json(updatedQuote)
+    }
+
+    @Get(':quoteId')
+    @AllowAnonymous()
+    @Throttle({ default: { limit: 100, ttl: 60000 } })
+    async getQuote(@Param('quoteId') quoteId: string, @Res() res: Response) {
+        const quote = await this.quoteService.getQuote(quoteId)
+        return res.status(200).json(quote)
     }
 }
