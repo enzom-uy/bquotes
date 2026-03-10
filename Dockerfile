@@ -21,14 +21,14 @@ RUN pnpm build;
 FROM node:25-alpine AS production
 RUN npm install -g pnpm
 
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml ./
+COPY --chown=appuser:appgroup package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --prod
-COPY --from=builder /app/dist ./dist
 
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-RUN chown -R appuser:appgroup /app
+COPY --chown=appuser:appgroup --from=builder /app/dist ./dist
 
 USER appuser
 
