@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common'
-import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { LoggerModule } from 'nestjs-pino'
 import { ConfigModule } from '@nestjs/config'
@@ -9,7 +8,7 @@ import { QuoteModule } from './quote/quote.module'
 import { OpenlibraryModule } from './openlibrary/openlibrary.module'
 import { BookModule } from './book/book.module'
 import { AuthorModule } from './author/author.module'
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler'
+import { ThrottlerModule } from '@nestjs/throttler'
 import { AuthModule } from '@thallesp/nestjs-better-auth'
 import { auth } from './lib/auth'
 
@@ -72,7 +71,7 @@ import { auth } from './lib/auth'
         BookModule,
         AuthorModule,
     ],
-    controllers: [AppController],
+    controllers: [],
     providers: [
         AppService,
         // {
