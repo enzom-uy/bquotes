@@ -20,12 +20,17 @@ RUN pnpm build;
 # Prod
 FROM node:25-alpine AS production
 RUN npm install -g pnpm
+
 WORKDIR /app
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-USER appuser
+
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --prod
 COPY --from=builder /app/dist ./dist
-EXPOSE 5000
-CMD [ "node", "dist/main.js" ]
 
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN chown -R appuser:appgroup /app
+
+USER appuser
+
+EXPOSE 5000
+CMD ["node", "dist/src/main.js"]
