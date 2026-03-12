@@ -15,6 +15,14 @@ export const auth = betterAuth({
             redirectURI: `${process.env.FRONTEND_URL}/api/auth/callback/google`,
         },
     },
+    user: {
+        additionalFields: {
+            profileCompleted: {
+                type: 'boolean',
+                defaultValue: false,
+            },
+        },
+    },
     logger: {
         level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
     },

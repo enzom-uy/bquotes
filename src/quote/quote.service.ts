@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common'
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { PinoLogger } from 'nestjs-pino'
-import * as schema from '@/db/schema'
+import * as schema from 'drizzle/schema'
 import { and, count, desc, eq, inArray, sql } from 'drizzle-orm'
 import { CreateQuotesDto } from './dto/create-quote.dto'
 import { BookService } from '@/book/book.service'

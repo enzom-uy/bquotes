@@ -12,7 +12,7 @@ import { UserService } from './user.service'
 import { UpdateProfileDto } from './dto/update-profile.dto'
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth'
 import { Response } from 'express'
-import * as schema from '@/db/schema'
+import * as schema from 'drizzle/schema'
 
 @Controller('user')
 export class UserController {

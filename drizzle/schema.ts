@@ -1,10 +1,8 @@
 import { uuid, primaryKey } from 'drizzle-orm/pg-core'
 import {
-    index,
     foreignKey,
     pgTable,
     text,
-    varchar,
     boolean,
     timestamp,
 } from 'drizzle-orm/pg-core'
@@ -19,6 +17,7 @@ export const user = pgTable('user', {
     email: text('email').notNull().unique(),
     emailVerified: boolean('emailVerified').notNull(),
     image: text('image'),
+    profileCompleted: boolean('profileCompleted').notNull(),
     createdAt: timestamp('createdAt').notNull(),
     updatedAt: timestamp('updatedAt').notNull(),
 })

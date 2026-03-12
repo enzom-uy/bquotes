@@ -11,6 +11,7 @@ import { AuthorModule } from './author/author.module'
 import { ThrottlerModule } from '@nestjs/throttler'
 import { AuthModule } from '@thallesp/nestjs-better-auth'
 import { auth } from './lib/auth'
+import { ImagesModule } from './images/images.module'
 
 @Module({
     imports: [
@@ -70,6 +71,7 @@ import { auth } from './lib/auth'
         OpenlibraryModule,
         BookModule,
         AuthorModule,
+        ImagesModule,
     ],
     controllers: [],
     providers: [

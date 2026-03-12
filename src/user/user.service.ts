@@ -3,12 +3,11 @@ import {
     Inject,
     Injectable,
     InternalServerErrorException,
-    Logger,
     NotFoundException,
 } from '@nestjs/common'
 import { eq } from 'drizzle-orm'
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
-import * as schema from '@/db/schema'
+import * as schema from 'drizzle/schema'
 import { UpdateProfileDto } from './dto/update-profile.dto'
 import { PinoLogger } from 'nestjs-pino'
 
@@ -88,6 +87,7 @@ export class UserService {
                     name: userData.name,
                     image: userData.image || null,
                     updatedAt: new Date(),
+                    profileCompleted: true,
                 })
                 .where(eq(schema.user.email, userData.email))
                 .returning()

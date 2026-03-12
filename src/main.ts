@@ -38,4 +38,5 @@ async function bootstrap() {
     const logger = app.get(Logger)
     logger.log(`Server is running on port ${port}`)
 }
+
 void bootstrap()

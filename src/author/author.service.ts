@@ -2,7 +2,7 @@ import { DATABASE_CONNECTION } from '@/db/db.module'
 import { Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { PinoLogger } from 'nestjs-pino'
-import * as schema from '@/db/schema'
+import * as schema from 'drizzle/schema'
 import { eq } from 'drizzle-orm'
 import { OpenlibraryService } from '@/openlibrary/openlibrary.service'
 

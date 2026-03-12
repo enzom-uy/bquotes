@@ -1,6 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common'
 import { PinoLogger } from 'nestjs-pino'
-import * as schema from '@/db/schema'
+import * as schema from 'drizzle/schema'
 import { OpenlibraryService } from '@/openlibrary/openlibrary.service'
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { DATABASE_CONNECTION } from '@/db/db.module'

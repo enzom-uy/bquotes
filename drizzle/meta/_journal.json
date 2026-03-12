@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1769614719481,
-      "tag": "0000_whole_war_machine",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1770830412762,
-      "tag": "0001_flat_daredevil",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1770841239179,
-      "tag": "0002_add_author_name_to_books",
+      "when": 1773286293047,
+      "tag": "0000_curly_stephen_strange",
       "breakpoints": true
     }
   ]

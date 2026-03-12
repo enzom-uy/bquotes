@@ -1,31 +1,25 @@
--- Drop old tables if they exist
-DROP TABLE IF EXISTS "quotes" CASCADE;
---> statement-breakpoint
-DROP TABLE IF EXISTS "books" CASCADE;
---> statement-breakpoint
-DROP TABLE IF EXISTS "authors" CASCADE;
---> statement-breakpoint
-DROP TABLE IF EXISTS "sessions" CASCADE;
---> statement-breakpoint
-DROP TABLE IF EXISTS "accounts" CASCADE;
---> statement-breakpoint
-DROP TABLE IF EXISTS "users" CASCADE;
---> statement-breakpoint
-
 CREATE TABLE "authors" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL,
+	"openlibrary_id" text,
 	"born" text,
 	"death" text,
 	"image_url" text,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp
+	"updated_at" timestamp,
+	CONSTRAINT "authors_openlibrary_id_unique" UNIQUE("openlibrary_id")
+);
+--> statement-breakpoint
+CREATE TABLE "book_authors" (
+	"book_id" uuid NOT NULL,
+	"author_id" uuid NOT NULL,
+	CONSTRAINT "book_authors_book_id_author_id_pk" PRIMARY KEY("book_id","author_id")
 );
 --> statement-breakpoint
 CREATE TABLE "books" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"title" text NOT NULL,
-	"author_id" uuid NOT NULL,
+	"author_name" text NOT NULL,
 	"summary" text,
 	"cover_url" text,
 	"openlibrary_id" text NOT NULL,
@@ -40,7 +34,6 @@ CREATE TABLE "quotes" (
 	"user_id" text NOT NULL,
 	"text" text NOT NULL,
 	"chapter" text,
-	"language" text,
 	"is_public" boolean DEFAULT false NOT NULL,
 	"is_favorite" boolean DEFAULT false NOT NULL,
 	"tags" text[],
@@ -82,6 +75,7 @@ CREATE TABLE "user" (
 	"email" text NOT NULL,
 	"emailVerified" boolean NOT NULL,
 	"image" text,
+	"profileCompleted" boolean NOT NULL,
 	"createdAt" timestamp NOT NULL,
 	"updatedAt" timestamp NOT NULL,
 	CONSTRAINT "user_email_unique" UNIQUE("email")
@@ -96,7 +90,12 @@ CREATE TABLE "verification" (
 	"updatedAt" timestamp
 );
 --> statement-breakpoint
-ALTER TABLE "books" ADD CONSTRAINT "authors_books_author_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."authors"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "book_authors" ADD CONSTRAINT "book_authors_book_id_books_id_fk" FOREIGN KEY ("book_id") REFERENCES "public"."books"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "book_authors" ADD CONSTRAINT "book_authors_author_id_authors_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."authors"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "book_authors" ADD CONSTRAINT "book_authors_book_id_fk" FOREIGN KEY ("book_id") REFERENCES "public"."books"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "book_authors" ADD CONSTRAINT "book_authors_author_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."authors"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "quotes" ADD CONSTRAINT "quotes_book_id_books_id_fk" FOREIGN KEY ("book_id") REFERENCES "public"."books"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "quotes" ADD CONSTRAINT "quotes_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "quotes" ADD CONSTRAINT "quotes_book_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;

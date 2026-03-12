@@ -29,8 +29,10 @@ COPY --chown=appuser:appgroup package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --prod
 
 COPY --chown=appuser:appgroup --from=builder /app/dist ./dist
+COPY --chown=appuser:appgroup --from=builder /app/drizzle ./drizzle
 
 USER appuser
 
 EXPOSE 5000
+
 CMD ["node", "dist/src/main.js"]
