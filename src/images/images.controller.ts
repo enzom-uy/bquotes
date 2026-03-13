@@ -1,26 +1,28 @@
 import {
     BadRequestException,
+    Body,
     Controller,
+    Delete,
     PayloadTooLargeException,
     Post,
     Query,
     Res,
     UnsupportedMediaTypeException,
-    UploadedFile,
+    UploadedFiles,
     UseInterceptors,
 } from '@nestjs/common'
 import { ImagesService } from './images.service'
-import { Response, Request } from 'express'
-import { FileInterceptor } from '@nestjs/platform-express'
+import { Response } from 'express'
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express'
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth'
 import { PinoLogger } from 'nestjs-pino'
-
-const SUPPORTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp']
-export type CLOUDINARY_FOLDERS = 'profile_pictures' | 'covers'
-const CLOUDINARY_FOLDERS_ARRAY: CLOUDINARY_FOLDERS[] = [
-    'profile_pictures',
-    'covers',
-]
+import {
+    SUPPORTED_IMAGE_TYPES,
+    CLOUDINARY_FOLDERS,
+    CloudinaryFolder,
+    UploadImageDto,
+    DeleteImagesDto,
+} from './dto/image.dto'
 
 @Controller('images')
 export class ImagesController {
@@ -29,33 +31,57 @@ export class ImagesController {
         private readonly logger: PinoLogger,
     ) {}
 
-    @Post('upload-single')
+    @Post('upload')
     @AllowAnonymous()
-    @UseInterceptors(FileInterceptor('image'))
+    @UseInterceptors(FilesInterceptor('images', 10))
     async upload(
-        @UploadedFile() image: Express.Multer.File,
-        @Query('cldFolder') cldFolder: CLOUDINARY_FOLDERS,
+        @UploadedFiles() images: Express.Multer.File[],
+        @Query('cldFolder') cldFolder: CloudinaryFolder,
         @Res() res: Response,
     ) {
-        if (!image) {
-            throw new BadRequestException('No image provided')
-        }
-        if (!CLOUDINARY_FOLDERS_ARRAY.includes(cldFolder)) {
+        if (!CLOUDINARY_FOLDERS.includes(cldFolder)) {
             throw new BadRequestException(
-                `Invalid cloudinary folder. Must be one of ${CLOUDINARY_FOLDERS_ARRAY.join(
-                    ', ',
-                )}`,
+                `Invalid cloudinary folder. Must be one of ${CLOUDINARY_FOLDERS.join(', ')}`,
             )
         }
-        if (image.size > 1024 * 1024 * 5) {
-            throw new PayloadTooLargeException('Image too large. Max 5MB')
-        }
-        if (!SUPPORTED_IMAGE_TYPES.includes(image.mimetype)) {
+
+        const validImages = images.filter((image) => {
+            if (image.size > 1024 * 1024 * 5) {
+                this.logger.warn(
+                    { filename: image.originalname },
+                    'Image too large, skipping',
+                )
+                return false
+            }
+            if (!SUPPORTED_IMAGE_TYPES.includes(image.mimetype)) {
+                this.logger.warn(
+                    { filename: image.originalname, mimetype: image.mimetype },
+                    'Unsupported image type, skipping',
+                )
+                return false
+            }
+            return true
+        })
+
+        if (validImages.length === 0) {
             throw new UnsupportedMediaTypeException(
-                'Unsupported image type. Only png, jpeg and webp are supported',
+                'No valid images to upload. Only png, jpeg and webp are supported. Max 5MB per image.',
             )
         }
-        const result = await this.imagesService.upload(image, cldFolder)
-        return res.json(result).status(201)
+
+        const results = await this.imagesService.upload(validImages, cldFolder)
+
+        return res.json({ uploaded: results }).status(201)
+    }
+
+    @Delete('delete')
+    @AllowAnonymous()
+    async delete(@Body() body: DeleteImagesDto, @Res() res: Response) {
+        if (!body.publicIds || body.publicIds.length === 0) {
+            throw new BadRequestException('No publicIds provided')
+        }
+
+        const results = await this.imagesService.delete(body.publicIds)
+        return res.json({ deleted: results }).status(200)
     }
 }

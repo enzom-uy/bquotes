@@ -1,18 +1,20 @@
 import {
-    BadRequestException,
     Body,
     Controller,
     Get,
     Patch,
     Query,
     Res,
+    UploadedFile,
+    UseInterceptors,
 } from '@nestjs/common'
 import { Throttle } from '@nestjs/throttler'
+import { FileInterceptor } from '@nestjs/platform-express'
 import { UserService } from './user.service'
 import { UpdateProfileDto } from './dto/update-profile.dto'
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth'
 import { Response } from 'express'
-import * as schema from 'drizzle/schema'
+import * as schema from '@drizzle/schema'
 
 @Controller('user')
 export class UserController {
@@ -53,8 +55,17 @@ export class UserController {
 
     @Patch('profile')
     @Throttle({ default: { limit: 100, ttl: 60000 } })
-    async updateProfile(@Body() body: UpdateProfileDto, @Res() res: Response) {
-        const updatedUser = await this.userService.updateProfile(body)
+    @UseInterceptors(FileInterceptor('image'))
+    async updateProfile(
+        @Body() body: UpdateProfileDto,
+        @UploadedFile() image: Express.Multer.File,
+        @Res() res: Response,
+    ) {
+        const dto: UpdateProfileDto = {
+            ...body,
+            imageFile: image,
+        }
+        const updatedUser = await this.userService.updateProfile(dto)
         return res.status(200).json(updatedUser)
     }
 }

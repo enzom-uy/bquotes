@@ -1,4 +1,5 @@
 import { DATABASE_CONNECTION } from '@/db/db.module'
+import { ImagesService } from '@/images/images.service'
 import {
     Inject,
     Injectable,
@@ -7,7 +8,7 @@ import {
 } from '@nestjs/common'
 import { eq } from 'drizzle-orm'
 import { NodePgDatabase } from 'drizzle-orm/node-postgres'
-import * as schema from 'drizzle/schema'
+import * as schema from '@drizzle/schema'
 import { UpdateProfileDto } from './dto/update-profile.dto'
 import { PinoLogger } from 'nestjs-pino'
 
@@ -19,6 +20,7 @@ export class UserService {
         @Inject(DATABASE_CONNECTION)
         private db: NodePgDatabase<typeof schema>,
         private readonly logger: PinoLogger,
+        private readonly imagesService: ImagesService,
     ) {}
 
     async findById(userId: string) {
@@ -81,11 +83,43 @@ export class UserService {
                 throw new NotFoundException('User not found')
             }
 
+            let newImageUrl: string | null = null
+
+            if (userData.imageFile) {
+                const uploadResult = await this.imagesService.upload(
+                    [userData.imageFile],
+                    'profile_pictures',
+                )
+                if (uploadResult.length > 0) {
+                    newImageUrl = uploadResult[0].url
+                }
+            } else if (userData.imageUrl) {
+                newImageUrl = userData.imageUrl
+            }
+
+            if (
+                (userData.imageFile || userData.imageUrl) &&
+                user.image &&
+                user.image.includes('cloudinary.com')
+            ) {
+                try {
+                    const publicId = this.extractPublicIdFromUrl(user.image)
+                    if (publicId) {
+                        await this.imagesService.deleteSingle(publicId)
+                    }
+                } catch (error) {
+                    this.logger.warn(
+                        { error, oldImage: user.image },
+                        'Failed to delete old profile image from Cloudinary',
+                    )
+                }
+            }
+
             const [updatedUser] = await this.db
                 .update(schema.user)
                 .set({
                     name: userData.name,
-                    image: userData.image || null,
+                    image: newImageUrl || userData.image || null,
                     updatedAt: new Date(),
                     profileCompleted: true,
                 })
@@ -104,6 +138,22 @@ export class UserService {
             throw new InternalServerErrorException(
                 'Could not update profile. Please try again later.',
             )
+        }
+    }
+
+    private extractPublicIdFromUrl(url: string): string | null {
+        try {
+            const parts = url.split('/')
+            const uploadIndex = parts.indexOf('upload')
+            if (uploadIndex === -1) return null
+
+            const afterUpload = parts.slice(uploadIndex + 1)
+            const publicIdWithExtension = afterUpload.join('/')
+            const publicId = publicIdWithExtension.replace(/\.[^/.]+$/, '')
+
+            return publicId
+        } catch {
+            return null
         }
     }
 }
