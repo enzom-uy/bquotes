@@ -13,8 +13,10 @@ const pool = new Pool({
 
 export const db = drizzle(pool, { schema })
 
-migrate(db, {
-    migrationsFolder: 'drizzle',
-})
+if (process.env.NODE_ENV === 'production') {
+    migrate(db, {
+        migrationsFolder: 'drizzle',
+    })
+}
 
 export type DrizzleDB = typeof db

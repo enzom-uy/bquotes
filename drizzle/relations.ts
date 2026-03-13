@@ -2,11 +2,11 @@ import { relations } from 'drizzle-orm/relations'
 import {
     user,
     account,
-    books,
-    quotes,
+    Books,
+    Quotes,
     session,
-    bookAuthors,
-    authors,
+    BookAuthors,
+    Authors,
 } from './schema'
 
 export const accountRelations = relations(account, ({ one }) => ({
@@ -18,27 +18,27 @@ export const accountRelations = relations(account, ({ one }) => ({
 
 export const userRelations = relations(user, ({ many }) => ({
     accounts: many(account),
-    quotes_userId: many(quotes, {
+    quotes_userId: many(Quotes, {
         relationName: 'quotes_userId_user_id',
     }),
     sessions: many(session),
 }))
 
-export const quotesRelations = relations(quotes, ({ one }) => ({
-    book: one(books, {
-        fields: [quotes.bookId],
-        references: [books.id],
+export const quotesRelations = relations(Quotes, ({ one }) => ({
+    book: one(Books, {
+        fields: [Quotes.book_id],
+        references: [Books.id],
     }),
     user_userId: one(user, {
-        fields: [quotes.userId],
+        fields: [Quotes.user_id],
         references: [user.id],
         relationName: 'quotes_userId_user_id',
     }),
 }))
 
-export const booksRelations = relations(books, ({ many }) => ({
-    quotes: many(quotes),
-    bookAuthors_bookId: many(bookAuthors, {
+export const booksRelations = relations(Books, ({ many }) => ({
+    quotes: many(Quotes),
+    bookAuthors_bookId: many(BookAuthors, {
         relationName: 'bookAuthors_bookId_books_id',
     }),
 }))
@@ -50,22 +50,21 @@ export const sessionRelations = relations(session, ({ one }) => ({
     }),
 }))
 
-export const bookAuthorsRelations = relations(bookAuthors, ({ one }) => ({
-    book_bookId: one(books, {
-        fields: [bookAuthors.bookId],
-        references: [books.id],
+export const bookAuthorsRelations = relations(BookAuthors, ({ one }) => ({
+    book_bookId: one(Books, {
+        fields: [BookAuthors.book_id],
+        references: [Books.id],
         relationName: 'bookAuthors_bookId_books_id',
     }),
-    author_authorId: one(authors, {
-        fields: [bookAuthors.authorId],
-        references: [authors.id],
+    author_authorId: one(Authors, {
+        fields: [BookAuthors.author_id],
+        references: [Authors.id],
         relationName: 'bookAuthors_authorId_authors_id',
     }),
 }))
 
-export const authorsRelations = relations(authors, ({ many }) => ({
-    bookAuthors_authorId: many(bookAuthors, {
+export const authorsRelations = relations(Authors, ({ many }) => ({
+    bookAuthors_authorId: many(BookAuthors, {
         relationName: 'bookAuthors_authorId_authors_id',
     }),
 }))
-
