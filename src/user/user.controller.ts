@@ -61,10 +61,16 @@ export class UserController {
         @UploadedFile() image: Express.Multer.File,
         @Res() res: Response,
     ) {
+        const deleteCurrentImage =
+            (body as any).deleteCurrentImage === true ||
+            (body as any).deleteCurrentImage === 'true'
+
         const dto: UpdateProfileDto = {
             ...body,
             imageFile: image,
+            deleteCurrentImage,
         }
+
         const updatedUser = await this.userService.updateProfile(dto)
         return res.status(200).json(updatedUser)
     }

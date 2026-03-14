@@ -124,6 +124,7 @@ export class ImagesService {
     async delete(publicIds: string[]): Promise<DeletedImageResult[]> {
         const results: DeletedImageResult[] = []
 
+        // TODO: handle this better than just using a for loop
         for (const publicId of publicIds) {
             try {
                 const result = await cloudinary.uploader.destroy(publicId)

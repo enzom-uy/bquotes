@@ -84,6 +84,9 @@ export class UserService {
             }
 
             let newImageUrl: string | null = null
+            const hasNewImage = !!(userData.imageFile || userData.imageUrl)
+            const shouldDeleteOldImage =
+                hasNewImage || userData.deleteCurrentImage
 
             if (userData.imageFile) {
                 const uploadResult = await this.imagesService.upload(
@@ -98,7 +101,7 @@ export class UserService {
             }
 
             if (
-                (userData.imageFile || userData.imageUrl) &&
+                shouldDeleteOldImage &&
                 user.image &&
                 user.image.includes('cloudinary.com')
             ) {
@@ -106,6 +109,10 @@ export class UserService {
                     const publicId = this.extractPublicIdFromUrl(user.image)
                     if (publicId) {
                         await this.imagesService.deleteSingle(publicId)
+                        this.logger.info(
+                            { publicId },
+                            'Deleted old profile image from Cloudinary',
+                        )
                     }
                 } catch (error) {
                     this.logger.warn(
@@ -115,11 +122,20 @@ export class UserService {
                 }
             }
 
+            let finalImage: string | null = null
+            if (userData.deleteCurrentImage) {
+                finalImage = null
+            } else if (newImageUrl) {
+                finalImage = newImageUrl
+            } else {
+                finalImage = user.image
+            }
+
             const [updatedUser] = await this.db
                 .update(schema.user)
                 .set({
                     name: userData.name,
-                    image: newImageUrl || userData.image || null,
+                    image: finalImage,
                     updatedAt: new Date(),
                     profileCompleted: true,
                 })
@@ -143,16 +159,28 @@ export class UserService {
 
     private extractPublicIdFromUrl(url: string): string | null {
         try {
+            // Cloudinary URL format:
+            // https://res.cloudinary.com/{cloud_name}/image/upload/v{version}/{folder}/{public_id}.{format}
+            // Example: .../upload/v1773449307/profile_pictures/550e8400-e29b.jpg
+
             const parts = url.split('/')
             const uploadIndex = parts.indexOf('upload')
+
             if (uploadIndex === -1) return null
 
             const afterUpload = parts.slice(uploadIndex + 1)
-            const publicIdWithExtension = afterUpload.join('/')
+
+            if (afterUpload.length < 2) return null
+
+            const publicIdWithExtension = afterUpload.slice(1).join('/')
             const publicId = publicIdWithExtension.replace(/\.[^/.]+$/, '')
 
             return publicId
-        } catch {
+        } catch (error) {
+            this.logger.error(
+                { error, url },
+                'Failed to extract publicId from URL',
+            )
             return null
         }
     }

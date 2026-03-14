@@ -3,7 +3,6 @@ import {
     Body,
     Controller,
     Delete,
-    PayloadTooLargeException,
     Post,
     Query,
     Res,
@@ -13,14 +12,12 @@ import {
 } from '@nestjs/common'
 import { ImagesService } from './images.service'
 import { Response } from 'express'
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express'
-import { AllowAnonymous } from '@thallesp/nestjs-better-auth'
+import { FilesInterceptor } from '@nestjs/platform-express'
 import { PinoLogger } from 'nestjs-pino'
 import {
     SUPPORTED_IMAGE_TYPES,
     CLOUDINARY_FOLDERS,
     CloudinaryFolder,
-    UploadImageDto,
     DeleteImagesDto,
 } from './dto/image.dto'
 
@@ -32,7 +29,6 @@ export class ImagesController {
     ) {}
 
     @Post('upload')
-    @AllowAnonymous()
     @UseInterceptors(FilesInterceptor('images', 10))
     async upload(
         @UploadedFiles() images: Express.Multer.File[],
@@ -75,7 +71,6 @@ export class ImagesController {
     }
 
     @Delete('delete')
-    @AllowAnonymous()
     async delete(@Body() body: DeleteImagesDto, @Res() res: Response) {
         if (!body.publicIds || body.publicIds.length === 0) {
             throw new BadRequestException('No publicIds provided')
