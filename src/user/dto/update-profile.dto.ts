@@ -1,10 +1,4 @@
-import {
-    IsEmail,
-    IsNotEmpty,
-    IsOptional,
-    IsString,
-    ValidateIf,
-} from 'class-validator'
+import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 
 export class UpdateProfileDto {
     @IsEmail()
@@ -19,10 +13,6 @@ export class UpdateProfileDto {
     @IsOptional()
     image?: string | null
 
-    @ValidateIf((o) => !o.image)
-    @IsNotEmpty({
-        message: 'Either image or imageUrl must be provided',
-    })
     @IsOptional()
     imageFile?: Express.Multer.File
 
@@ -30,8 +20,6 @@ export class UpdateProfileDto {
     @IsOptional()
     imageUrl?: string
 
-    @ValidateIf((o) => !o.imageFile && !o.imageUrl)
-    @IsNotEmpty()
     @IsOptional()
     deleteCurrentImage?: boolean
 }

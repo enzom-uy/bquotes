@@ -15,6 +15,9 @@ services:
             GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
             BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
             BETTER_AUTH_URL: ${BETTER_AUTH_URL}
+            CLD_CLOUD_NAME: ${CLD_CLOUD_NAME}
+            CLD_API_KEY: ${CLD_API_KEY}
+            CLD_API_SECRET: ${CLD_API_SECRET}
         volumes:
             - .:/app
             - node_modules:/app/node_modules
