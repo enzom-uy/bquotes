@@ -35,6 +35,16 @@ export class ImagesService {
         })
     }
 
+    async uploadFromUrl(url: string, folder: CloudinaryFolder) {
+        const randomId = randomUUID()
+        const result = await cloudinary.uploader.upload(url, {
+            folder,
+            public_id: randomId,
+            resource_type: 'image',
+        })
+        return result.secure_url
+    }
+
     async upload(
         files: Express.Multer.File[],
         folder: CloudinaryFolder,

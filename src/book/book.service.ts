@@ -7,6 +7,7 @@ import { DATABASE_CONNECTION } from '@/db/db.module'
 import { AuthorService } from '@/author/author.service'
 import { extractOLIDFromKey } from '@/openlibrary/openlibrary.utils'
 import { ilike, or, eq } from 'drizzle-orm'
+import { ImagesService } from '@/images/images.service'
 
 @Injectable()
 export class BookService {
@@ -14,6 +15,7 @@ export class BookService {
         private readonly logger: PinoLogger,
         private readonly openlibraryService: OpenlibraryService,
         private readonly authorService: AuthorService,
+        private readonly imagesService: ImagesService,
         @Inject(DATABASE_CONNECTION)
         private readonly db: NodePgDatabase<typeof schema>,
     ) {}
@@ -121,6 +123,15 @@ export class BookService {
         }
 
         const authorName = authors.map((a) => a.name).join(', ') || 'Unknown'
+        const coverOpenlibraryUrl = `https://covers.openlibrary.org/b/id/${book.covers[0]}-M.jpg`
+        let cloudinaryCoverUrl: string | undefined
+
+        if (book.covers?.[0]) {
+            cloudinaryCoverUrl = await this.imagesService.uploadFromUrl(
+                coverOpenlibraryUrl,
+                'covers',
+            )
+        }
 
         const [insertedBook] = await db
             .insert(schema.Books)
@@ -128,8 +139,8 @@ export class BookService {
                 title: book.title,
                 author_name: authorName,
                 summary: book.description,
-                cover_url: book.covers?.[0]
-                    ? `https://covers.openlibrary.org/b/id/${book.covers[0]}-M.jpg`
+                cover_url: cloudinaryCoverUrl
+                    ? cloudinaryCoverUrl
                     : coverUrl
                       ? coverUrl
                       : undefined,

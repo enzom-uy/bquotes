@@ -5,12 +5,14 @@ import { PinoLogger } from 'nestjs-pino'
 import * as schema from 'drizzle/schema'
 import { eq } from 'drizzle-orm'
 import { OpenlibraryService } from '@/openlibrary/openlibrary.service'
+import { ImagesService } from '@/images/images.service'
 
 @Injectable()
 export class AuthorService {
     constructor(
         private readonly logger: PinoLogger,
         private readonly openlibraryService: OpenlibraryService,
+        private readonly imagesService: ImagesService,
         @Inject(DATABASE_CONNECTION)
         private readonly db: NodePgDatabase<typeof schema>,
     ) {}
@@ -54,6 +56,10 @@ export class AuthorService {
         if (existing) return existing
 
         const authorData = await this.openlibraryService.getAuthor(authorOLID)
+        const cloudinaryUrl = await this.imagesService.uploadFromUrl(
+            authorData.pictureUrl,
+            'authors',
+        )
 
         const [inserted] = await db
             .insert(schema.Authors)
@@ -61,7 +67,7 @@ export class AuthorService {
                 name: authorData.name,
                 openlibrary_id: authorOLID,
                 born: authorData.birthDate,
-                image_url: authorData.pictureUrl,
+                image_url: cloudinaryUrl,
             })
             .returning()
 

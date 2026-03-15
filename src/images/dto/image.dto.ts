@@ -2,7 +2,11 @@ import { IsIn, IsString, ValidateIf, IsNotEmpty } from 'class-validator'
 
 export const SUPPORTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp']
 
-export const CLOUDINARY_FOLDERS = ['profile_pictures', 'covers'] as const
+export const CLOUDINARY_FOLDERS = [
+    'profile_pictures',
+    'covers',
+    'authors',
+] as const
 
 export type CloudinaryFolder = (typeof CLOUDINARY_FOLDERS)[number]
 
