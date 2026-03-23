@@ -1,4 +1,4 @@
-import { uuid, primaryKey } from 'drizzle-orm/pg-core'
+import { uuid, primaryKey, pgEnum } from 'drizzle-orm/pg-core'
 import {
     foreignKey,
     pgTable,
@@ -62,6 +62,65 @@ export const verification = pgTable('verification', {
     updatedAt: timestamp('updatedAt'),
 })
 
+// ============================================
+// Application Domain Tables
+// ============================================
+
+export const reportReasonsEnum = pgEnum('reasons', [
+    'spam',
+    'profile_picture',
+    'user_name',
+    'other',
+])
+
+export const Reports = pgTable('reports', {
+    id: uuid('id').defaultRandom().primaryKey().notNull(),
+    user_id: text('user_id')
+        .notNull()
+        .references(() => user.id),
+    quote_id: uuid('quote_id').references(() => Quotes.id),
+    report_author_id: text('report_author_id')
+        .notNull()
+        .references(() => user.id),
+    report_text: text('report_text'),
+    report_type: reportReasonsEnum().notNull(),
+    created_at: timestamp('created_at').defaultNow().notNull(),
+    updated_at: timestamp('updated_at'),
+})
+
+export const Quotes = pgTable(
+    'quotes',
+    {
+        id: uuid('id').defaultRandom().primaryKey().notNull(),
+        book_id: uuid('book_id')
+            .notNull()
+            .references(() => Books.id, { onDelete: 'cascade' }),
+        user_id: text('user_id')
+            .notNull()
+            .references(() => user.id, { onDelete: 'cascade' }),
+        text: text('text').notNull(),
+        chapter: text('chapter'),
+        is_public: boolean('is_public').default(false).notNull(),
+        is_favorite: boolean('is_favorite').default(false).notNull(),
+        tags: text('tags').array(),
+        created_at: timestamp('created_at').defaultNow().notNull(),
+        updated_at: timestamp('updated_at'),
+    },
+    (table) => [
+        foreignKey({
+            columns: [table.book_id],
+            foreignColumns: [Books.id],
+            name: 'quotes_book_id_fk',
+        }).onDelete('cascade'),
+
+        foreignKey({
+            columns: [table.user_id],
+            foreignColumns: [user.id],
+            name: 'quotes_book_id_fk',
+        }).onDelete('cascade'),
+    ],
+)
+
 export const Books = pgTable('books', {
     id: uuid('id').defaultRandom().primaryKey().notNull(),
     title: text('title').notNull(),
@@ -107,43 +166,6 @@ export const BookAuthors = pgTable(
             columns: [table.author_id],
             foreignColumns: [Authors.id],
             name: 'book_authors_author_id_fk',
-        }).onDelete('cascade'),
-    ],
-)
-
-// ============================================
-// Application Domain Tables
-// ============================================
-
-export const Quotes = pgTable(
-    'quotes',
-    {
-        id: uuid('id').defaultRandom().primaryKey().notNull(),
-        book_id: uuid('book_id')
-            .notNull()
-            .references(() => Books.id, { onDelete: 'cascade' }),
-        user_id: text('user_id')
-            .notNull()
-            .references(() => user.id, { onDelete: 'cascade' }),
-        text: text('text').notNull(),
-        chapter: text('chapter'),
-        is_public: boolean('is_public').default(false).notNull(),
-        is_favorite: boolean('is_favorite').default(false).notNull(),
-        tags: text('tags').array(),
-        created_at: timestamp('created_at').defaultNow().notNull(),
-        updated_at: timestamp('updated_at'),
-    },
-    (table) => [
-        foreignKey({
-            columns: [table.book_id],
-            foreignColumns: [Books.id],
-            name: 'quotes_book_id_fk',
-        }).onDelete('cascade'),
-
-        foreignKey({
-            columns: [table.user_id],
-            foreignColumns: [user.id],
-            name: 'quotes_book_id_fk',
         }).onDelete('cascade'),
     ],
 )

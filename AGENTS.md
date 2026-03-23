@@ -4,7 +4,7 @@
 
 NestJS backend for a quotes management application with book/author integration and external OpenLibrary API.
 
-**Stack:** NestJS 11 + TypeScript 5.9 + PostgreSQL + Drizzle ORM + Better Auth (Google OAuth) + Pino logging + Rate limiting
+**Stack:** NestJS 11 + TypeScript 5.9 + PostgreSQL + Drizzle ORM + Better Auth (Google OAuth) + Pino logging + Rate limiting + Cloudinary
 
 ---
 
@@ -78,8 +78,14 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres'
 
 // 3. Internal modules (use @/* alias)
 import { DATABASE_CONNECTION } from '@/db/db.module'
-import * as schema from '@/db/schema'
+import * as schema from '@drizzle/schema'
 ```
+
+### Schema Location
+
+- **Path:** `@drizzle/schema` → `drizzle/schema.ts`
+- **Path:** `@drizzle/relations` → `drizzle/relations.ts`
+- Contains all Drizzle ORM tables (user, Quotes, Books, Authors, Reports, etc.)
 
 ### Naming Conventions
 
@@ -252,6 +258,9 @@ Required (see `.env.example`):
 - `GOOGLE_CLIENT_SECRET` - OAuth secret
 - `NODE_ENV` - development | production
 - `PORT` - Default 5000
+- `CLD_CLOUD_NAME` - Cloudinary cloud name
+- `CLD_API_KEY` - Cloudinary API key
+- `CLD_API_SECRET` - Cloudinary API secret
 
 ---
 
@@ -259,7 +268,25 @@ Required (see `.env.example`):
 
 - **API prefix:** All routes prefixed with `/api`
 - **Path alias:** `@/*` maps to `src/*`
+- **Schema alias:** `@drizzle/*` maps to `drizzle/*`
 - **Global validation:** Configured with `whitelist: true` in main.ts
 - **CORS:** Supports credentials for cross-origin auth
 - **Logging:** Pino with pretty-print in dev, JSON in prod
 - **Docker:** Multi-stage production build with non-root user + healthcheck at `/api/health`
+
+### Cloudinary Images
+
+- **Upload:** `POST /api/images/upload` - accepts multiple images (`images` field)
+- **Delete:** `DELETE /api/images/delete` - accepts array of publicIds
+- **Folders:** `profile_pictures`, `covers`
+- **Supported formats:** png, jpeg, webp
+- **Max size:** 5MB per image
+- **User profile update:** Profile images handled in `PATCH /api/user/profile`
+
+### Reports
+
+- **Create:** `POST /api/reports`
+- **Get by user:** `GET /api/reports/user/:userId`
+- **Get all:** `GET /api/reports/all`
+- **Get by ID:** `GET /api/reports/:reportId`
+- **Reasons:** `spam`, `profile_picture`, `user_name`, `other`

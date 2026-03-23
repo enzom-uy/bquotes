@@ -12,6 +12,7 @@ import { ThrottlerModule } from '@nestjs/throttler'
 import { AuthModule } from '@thallesp/nestjs-better-auth'
 import { auth } from './lib/auth'
 import { ImagesModule } from './images/images.module'
+import { ReportModule } from './reports/report.module'
 
 @Module({
     imports: [
@@ -72,6 +73,7 @@ import { ImagesModule } from './images/images.module'
         BookModule,
         AuthorModule,
         ImagesModule,
+        ReportModule,
     ],
     controllers: [],
     providers: [

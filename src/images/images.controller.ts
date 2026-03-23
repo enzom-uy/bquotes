@@ -20,6 +20,7 @@ import {
     CloudinaryFolder,
     DeleteImagesDto,
 } from './dto/image.dto'
+import { Throttle } from '@nestjs/throttler'
 
 @Controller('images')
 export class ImagesController {
@@ -29,6 +30,7 @@ export class ImagesController {
     ) {}
 
     @Post('upload')
+    @Throttle({ default: { limit: 100, ttl: 60000 } })
     @UseInterceptors(FilesInterceptor('images', 10))
     async upload(
         @UploadedFiles() images: Express.Multer.File[],
@@ -71,6 +73,7 @@ export class ImagesController {
     }
 
     @Delete('delete')
+    @Throttle({ default: { limit: 100, ttl: 60000 } })
     async delete(@Body() body: DeleteImagesDto, @Res() res: Response) {
         if (!body.publicIds || body.publicIds.length === 0) {
             throw new BadRequestException('No publicIds provided')
